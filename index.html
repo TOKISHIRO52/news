@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="朝刊">
+<title>朝刊ブリーフィング</title>
+<style>
+  :root {
+    --bg: #0d0d12;
+    --surface: #141418;
+    --border: #1e1e26;
+    --gold: #c9a84c;
+    --text: #e8e4d9;
+    --muted: #6a6458;
+    --dim: #333;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Hiragino Sans', 'Yu Gothic', sans-serif; min-height: 100dvh; max-width: 430px; margin: 0 auto; }
+  ::-webkit-scrollbar { display: none; }
+
+  /* Header */
+  #header {
+    background: rgba(13,13,18,0.96);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    position: sticky; top: 0; z-index: 100;
+    border-bottom: 1px solid var(--border);
+    padding-top: env(safe-area-inset-top, 44px);
+  }
+  .header-inner { padding: 14px 20px 12px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .header-date { font-size: 11px; color: var(--dim); margin-bottom: 3px; letter-spacing: 0.04em; }
+  .header-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .header-sources { font-size: 10px; color: #2a2a35; text-align: right; line-height: 1.6; }
+
+  /* Genre tabs */
+  .tabs { display: flex; overflow-x: auto; gap: 8px; padding: 0 20px 14px; scrollbar-width: none; }
+  .tab {
+    flex-shrink: 0; padding: 8px 14px; border-radius: 20px; border: none;
+    background: #1a1a22; color: #666; font-size: 13px; cursor: pointer;
+    display: flex; gap: 5px; align-items: center; transition: all 0.15s;
+    font-family: -apple-system, 'Hiragino Sans', sans-serif;
+  }
+  .tab.active { background: var(--gold); color: #000; font-weight: 700; }
+  .tab-count { background: #252530; border-radius: 10px; padding: 1px 6px; font-size: 10px; color: #444; }
+  .tab.active .tab-count { background: rgba(0,0,0,0.2); color: #000; }
+
+  /* Content */
+  #content { padding-bottom: 40px; }
+
+  /* Section label */
+  .section-label { padding: 18px 20px 8px; font-size: 10px; color: var(--dim); letter-spacing: 0.1em; }
+
+  /* Top card */
+  .top-wrap { padding: 14px 16px 0; }
+  .top-label { font-size: 10px; color: var(--gold); letter-spacing: 0.15em; margin-bottom: 10px; padding-left: 4px; }
+  .top-card {
+    border-radius: 20px; padding: 22px; cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.06);
+    position: relative; overflow: hidden;
+    transition: opacity 0.15s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .top-card:active { opacity: 0.75; }
+  .top-glow { position: absolute; top: 0; right: 0; width: 100px; height: 100px; border-radius: 0 20px 0 0; pointer-events: none; }
+  .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .source-badge { background: rgba(255,255,255,0.06); color: #666; }
+  .top-title { font-size: 18px; font-weight: 700; line-height: 1.45; margin-bottom: 11px; letter-spacing: -0.01em; }
+  .top-lead { font-size: 13px; color: #7a7060; line-height: 1.6; margin-bottom: 14px; letter-spacing: 0.02em; }
+  .top-footer { display: flex; justify-content: space-between; align-items: center; }
+  .tags { display: flex; gap: 6px; }
+  .tag { font-size: 11px; color: #444; }
+  .more-link { font-size: 13px; }
+
+  /* Row */
+  .row {
+    margin: 0 16px; border-bottom: 1px solid #141418;
+    padding: 16px 4px; cursor: pointer;
+    display: flex; gap: 14px; align-items: flex-start;
+    transition: opacity 0.15s;
+    -webkit-user-select: none; user-select: none;
+  }
+  .row:active { opacity: 0.55; }
+  .row:last-child { border-bottom: none; }
+  .row-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; margin-top: 2px; border: 1px solid rgba(255,255,255,0.05); }
+  .row-body { flex: 1; min-width: 0; }
+  .row-meta { display: flex; gap: 6px; margin-bottom: 4px; align-items: center; font-size: 11px; }
+  .row-dot { color: #2a2a35; }
+  .row-source { color: #444; }
+  .row-title { font-size: 15px; font-weight: 600; color: #d0ccbc; margin-bottom: 4px; line-height: 1.4; letter-spacing: -0.01em; }
+  .row-lead { font-size: 12px; color: #555; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .row-arrow { color: #2a2a35; font-size: 16px; flex-shrink: 0; margin-top: 10px; }
+
+  /* Detail */
+  #detail { display: none; min-height: 100dvh; flex-direction: column; }
+  #detail.active { display: flex; }
+  .detail-header { padding-top: env(safe-area-inset-top, 44px); padding-bottom: 22px; padding-left: 20px; padding-right: 20px; flex-shrink: 0; }
+  .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    border-radius: 20px; padding: 8px 16px; font-size: 14px; cursor: pointer;
+    margin-bottom: 18px; display: inline-block;
+    font-family: -apple-system, 'Hiragino Sans', sans-serif;
+  }
+  .detail-title { font-size: 19px; font-weight: 700; line-height: 1.5; letter-spacing: -0.01em; }
+  .detail-body { flex: 1; overflow-y: auto; padding: 22px 20px; }
+  .summary-box { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 18px; }
+  .summary-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+  .summary-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+  .summary-num { width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .summary-text { font-size: 15px; line-height: 1.65; letter-spacing: 0.02em; }
+  .detail-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+  .detail-tag { background: #1e1e26; color: #555; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
+  .source-link { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border-radius: 14px; padding: 16px 20px; text-decoration: none; }
+  .source-link-label { font-size: 11px; color: #555; margin-bottom: 4px; }
+  .source-link-name { font-size: 13px; }
+  .source-link-icon { font-size: 20px; }
+
+  .footer-note { text-align: center; padding: 24px 20px 8px; font-size: 10px; color: #1e1e26; }
+
+  /* List view */
+  #list { display: block; }
+  #list.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<!-- LIST VIEW -->
+<div id="list">
+  <div id="header">
+    <div class="header-inner">
+      <div>
+        <div class="header-date" id="today-date">読込中...</div>
+        <div class="header-title">朝刊ブリーフィング</div>
+      </div>
+      <div class="header-sources">NHK / 日経<br>Reuters / 時事</div>
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<!-- DETAIL VIEW -->
+<div id="detail">
+  <div class="detail-header" id="detail-header">
+    <button class="back-btn" onclick="closeDetail()">← 戻る</button>
+    <div class="badges" id="detail-badges"></div>
+    <div class="detail-title" id="detail-title"></div>
+  </div>
+  <div class="detail-body">
+    <div class="summary-box" id="summary-box">
+      <div class="summary-label" id="summary-label-el"></div>
+      <div id="summary-rows"></div>
+    </div>
+    <div class="detail-tags" id="detail-tags"></div>
+    <a class="source-link" id="source-link" href="#" target="_blank" rel="noopener noreferrer">
+      <div>
+        <div class="source-link-label">元記事を開く</div>
+        <div class="source-link-name" id="source-link-name"></div>
+      </div>
+      <div class="source-link-icon" id="source-link-icon">↗</div>
+    </a>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const GENRES = [
+  { id:"all",           label:"全て",   emoji:"📰" },
+  { id:"international", label:"国際",   emoji:"🌏" },
+  { id:"politics",      label:"政治",   emoji:"🏛️" },
+  { id:"economy",       label:"経済",   emoji:"📈" },
+  { id:"society",       label:"社会",   emoji:"🏙️" },
+];
+
+const COLORS = {
+  politics:      { bg:"#15192a", accent:"#4a7fc1", light:"#7aabea" },
+  economy:       { bg:"#14221a", accent:"#3a9c5a", light:"#6ecf8a" },
+  international: { bg:"#221525", accent:"#9c4ab0", light:"#cd7ee0" },
+  society:       { bg:"#22190e", accent:"#c9863c", light:"#e8ad6a" },
+};
+function col(genre) { return COLORS[genre] || { bg:"#181820", accent:"#c9a84c", light:"#e0c87a" }; }
+
+const NEWS = [
+  {
+    id:"1", genre:"international", importance:"high",
+    title:"米、ホルムズ海峡で足止め船舶の退避支援開始",
+    source:"NHK・Bloomberg", url:"https://news.web.nhk/newsweb",
+    summary:[
+      "トランプ大統領が「プロジェクト・フリーダム」を発表し、ホルムズ海峡で足止めの中立船舶の退避支援を5月4日朝より開始した。",
+      "対象は紛争に無関係な国の船舶で、妨害があれば「力ずくで対処する」と強調した。",
+      "イランとの協議を「非常に前向き」と評価する一方、軍事・外交の両面が並行する異例の展開。",
+      "イランはこの動きを「停戦違反」と強くけん制し、偶発的な衝突リスクが高まっている。",
+      "日本の原油輸入の約9割が通過するホルムズ海峡の動向は、エネルギー価格と物価に直結する。",
+    ],
+    tags:["イラン情勢","エネルギー","トランプ"],
+  },
+  {
+    id:"2", genre:"politics", importance:"high",
+    title:"日豪首脳がレアアース6事業で経済安保共同宣言",
+    source:"NHK・日本経済新聞", url:"https://www.nikkei.com/article/DGXZQOUA306M60Q6A430C2000000/",
+    summary:[
+      "高市首相とオーストラリアのアルバニージー首相がキャンベラで会談し、経済安全保障の共同宣言を発出した。",
+      "レアアースなど重要鉱物を共同開発する6事業を指定し、両政府が投資・助成金で支援することを明記した。",
+      "LNG輸入の4割・石炭の6割を豪州に依存する日本にとって安定的な資源調達が重要課題となっている。",
+      "共同宣言では中国を念頭に「重要鉱物への輸出規制に強い懸念」を表明した。",
+      "高市首相は「日豪は準同盟国と言える関係」と強調し、インド太平洋での安保連携深化を示した。",
+    ],
+    tags:["経済安保","資源","日豪関係"],
+  },
+  {
+    id:"3", genre:"international", importance:"medium",
+    title:"イランが停戦・封鎖解除など14項目の和平案を提示",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:[
+      "イランは仲介国パキスタンを通じて米国に14項目の和平提案を提示した。",
+      "封鎖解除・今後攻撃しないとの保証・新たな海峡管理の仕組みの確立などを含む。",
+      "米国は核問題の先行合意を求める立場を維持しており、交渉の構造的な乖離が続く。",
+      "停戦中もイランはIRGCを通じた通航料徴収を続けており、海峡の商業利用は正常化していない。",
+      "原油価格は危機前の約2倍の1バレル108ドル水準が続き、日本の物価への影響が長期化する見通し。",
+    ],
+    tags:["イラン","中東","停戦交渉"],
+  },
+  {
+    id:"4", genre:"economy", importance:"medium",
+    title:"ホルムズ危機で原油2倍・LNG40%高騰　日本企業に調達危機",
+    source:"日本経済新聞", url:"https://www.nikkei.com/",
+    summary:[
+      "ホルムズ海峡危機を受け、原油価格は危機前比約2倍の108ドル、アジアのLNG価格は40%超上昇している。",
+      "主要海運各社はペルシャ湾向け予約を停止し、喜望峰回りに切り替え、リードタイムが最大21日延長される。",
+      "三菱UFJ銀行の分析では封鎖が長期化した場合、円ドル相場が160〜165円まで円安が進む可能性がある。",
+      "LPG価格は前月比最大80%急騰し、プラスチック・化学製品の製造コストに直撃している。",
+      "企業は「再開待ち」でなく「制約付き運用」を前提とした調達戦略への転換が求められる。",
+    ],
+    tags:["原油高","エネルギー","円安"],
+  },
+  {
+    id:"5", genre:"society", importance:"medium",
+    title:"低気圧で全国に強風被害　沖縄は梅雨入り",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:[
+      "発達した低気圧の影響で5月4日、全国各地で強風被害が相次いでいる。",
+      "静岡・沼津では電柱が倒れ国道が一時通行止めに、宇都宮でも複数の住宅で屋根や塀に被害が出た。",
+      "東北地方は暴風警戒が続き、小田急小田原線（秦野〜小田原）は午前中に運転を一時見合わせた。",
+      "気象庁は沖縄・奄美地方の梅雨入りを発表し、例年より数日早い梅雨入りとなった。",
+      "4月は西日本を中心に史上3番目の高温が記録されており、今後の気象変動が懸念される。",
+    ],
+    tags:["気象","強風","梅雨"],
+  },
+  {
+    id:"6", genre:"society", importance:"medium",
+    title:"自転車交通違反「青切符」全国で842件交付",
+    source:"読売新聞", url:"https://www.yomiuri.co.jp/",
+    summary:[
+      "自転車への青切符（反則金）制度が導入されて以来、全国で842件の切符が交付されたと読売新聞が報じた。",
+      "違反の内訳は「一時不停止」と「ながらスマホ」が上位を占めている。",
+      "青切符制度は軽微な違反に反則金で対応するもので、従来の赤切符（刑事手続き）より運用しやすい。",
+      "都市部では自転車通勤・通学の増加に伴い、歩行者との接触事故が増加傾向にある。",
+      "警察庁は今後も取り締まりを継続する方針で、自転車利用者への注意喚起が求められる。",
+    ],
+    tags:["交通安全","自転車","法規制"],
+  },
+  {
+    id:"7", genre:"society", importance:"medium",
+    title:"旭山動物園の焼却炉から人骨か　北海道警が捜査",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:[
+      "北海道旭川市の旭山動物園の焼却炉から、複数の人骨のようなものが発見されたと北海道警が発表した。",
+      "防犯カメラには大きな荷物を車で運び込む映像が確認されており、遺体の一部が持ち込まれた可能性がある。",
+      "動物園の焼却炉は通常、動物の死体処理に使用されるもので、経緯を詳しく調べている。",
+      "北海道警は殺人や死体遺棄などの観点から捜査を進め、関係者から事情聴取を始めている。",
+      "動物園は施設の一部を立入禁止にして捜査に協力しており、全容解明には時間を要する見通し。",
+    ],
+    tags:["事件","北海道","捜査"],
+  },
+  {
+    id:"8", genre:"society", importance:"medium",
+    title:"水俣病公式確認70年　患者・遺族が慰霊式",
+    source:"時事通信", url:"https://www.jiji.com/",
+    summary:[
+      "水俣病が公式確認されてから70年となる5月1日、熊本県水俣市で慰霊式が行われた。",
+      "患者代表の緒方さんは「初心に返って問題を検証してほしい」と訴え、未解決の問題の多さを強調した。",
+      "水俣病は1956年公式確認の有機水銀中毒で、チッソ水俣工場の排水が原因とされ約3000人が認定患者となっている。",
+      "未認定の被害者や損害賠償をめぐる訴訟は現在も続いており、環境省は改めて被害者支援を表明した。",
+      "公害問題の原点として教訓を後世に伝える取り組みの重要性が式典でも繰り返し強調された。",
+    ],
+    tags:["水俣病","公害","環境"],
+  },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────
+let activeGenre = "all";
+let currentArticle = null;
+
+// ── INIT ──────────────────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  const d = new Date();
+  document.getElementById("today-date").textContent =
+    d.toLocaleDateString("ja-JP", { year:"numeric", month:"long", day:"numeric", weekday:"short" });
+  renderTabs();
+  renderContent();
+});
+
+// ── TABS ──────────────────────────────────────────────────────────
+function renderTabs() {
+  const el = document.getElementById("tabs");
+  el.innerHTML = GENRES.map(g => {
+    const cnt = g.id === "all" ? NEWS.length : NEWS.filter(a => a.genre === g.id).length;
+    return `<button class="tab${activeGenre===g.id?" active":""}" onclick="setGenre('${g.id}')">
+      <span>${g.emoji}</span><span>${g.label}</span>
+      ${cnt>0?`<span class="tab-count">${cnt}</span>`:""}
+    </button>`;
+  }).join("");
+}
+
+function setGenre(id) {
+  activeGenre = id;
+  renderTabs();
+  renderContent();
+  document.getElementById("content").scrollTop = 0;
+  window.scrollTo(0,0);
+}
+
+// ── CONTENT ───────────────────────────────────────────────────────
+function renderContent() {
+  const filtered = activeGenre === "all" ? NEWS : NEWS.filter(a => a.genre === activeGenre);
+  const top = filtered.find(a => a.importance === "high");
+  const rest = filtered.filter(a => a !== top);
+  const el = document.getElementById("content");
+
+  let html = "";
+
+  if (top) {
+    const c = col(top.genre);
+    const gi = GENRES.find(g => g.id === top.genre);
+    html += `
+    <div class="top-wrap">
+      <div class="top-label">◈ TOP STORY</div>
+      <div class="top-card" style="background:${c.bg};border-color:${c.accent}33" onclick="openDetail('${top.id}')">
+        <div class="top-glow" style="background:radial-gradient(circle at top right,${c.accent}18,transparent 70%)"></div>
+        <div class="badges">
+          <span class="badge" style="background:${c.accent}22;color:${c.light}">${gi.emoji} ${gi.label}</span>
+          <span class="badge source-badge">${top.source}</span>
+        </div>
+        <div class="top-title" style="color:#f0ece0">${top.title}</div>
+        <div class="top-lead">${top.summary[0]}</div>
+        <div class="top-footer">
+          <div class="tags">${(top.tags||[]).slice(0,2).map(t=>`<span class="tag">#${t}</span>`).join("")}</div>
+          <span class="more-link" style="color:${c.accent}">詳細 →</span>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  if (top && rest.length > 0) {
+    html += `<div class="section-label">その他のニュース</div>`;
+  }
+
+  rest.forEach((a, i) => {
+    const c = col(a.genre);
+    const gi = GENRES.find(g => g.id === a.genre);
+    const isLast = i === rest.length - 1;
+    html += `
+    <div class="row${isLast?" last":""}" style="${isLast?"border-bottom:none":""}" onclick="openDetail('${a.id}')">
+      <div class="row-icon" style="background:${c.bg}">${gi.emoji}</div>
+      <div class="row-body">
+        <div class="row-meta">
+          <span style="color:${c.light}">${gi.label}</span>
+          <span class="row-dot">·</span>
+          <span class="row-source">${a.source}</span>
+        </div>
+        <div class="row-title">${a.title}</div>
+        <div class="row-lead">${a.summary[0]}</div>
+      </div>
+      <div class="row-arrow">›</div>
+    </div>`;
+  });
+
+  if (filtered.length === 0) {
+    html = `<div style="text-align:center;padding:80px 20px"><div style="font-size:40px;margin-bottom:12px">📭</div><p style="color:#444;font-size:14px">このジャンルの記事はありません</p></div>`;
+  }
+
+  html += `<div class="footer-note">最終更新 2026/5/4 12:30 · NHK / 日経 / Bloomberg / 時事 / 読売</div>`;
+  el.innerHTML = html;
+}
+
+// ── DETAIL ────────────────────────────────────────────────────────
+function openDetail(id) {
+  const a = NEWS.find(x => x.id === id);
+  if (!a) return;
+  currentArticle = a;
+  const c = col(a.genre);
+  const gi = GENRES.find(g => g.id === a.genre);
+
+  document.getElementById("detail-header").style.background = c.bg;
+  document.getElementById("detail-header").style.borderBottom = `1px solid ${c.accent}22`;
+
+  document.getElementById("detail-badges").innerHTML = `
+    <span class="badge" style="background:${c.accent}22;color:${c.light}">${gi.emoji} ${gi.label}</span>
+    <span class="badge source-badge">${a.source}</span>`;
+
+  document.getElementById("detail-title").textContent = a.title;
+
+  document.getElementById("summary-box").style.borderLeft = `3px solid ${c.accent}`;
+  document.getElementById("summary-label-el").style.color = c.light;
+  document.getElementById("summary-label-el").textContent = "5行要約";
+
+  document.getElementById("summary-rows").innerHTML = (a.summary||[]).map((line, i) => `
+    <div class="summary-row">
+      <div class="summary-num" style="background:${i===0?c.accent:"rgba(255,255,255,0.06)"};color:${i===0?"#000":"#666"}">${i+1}</div>
+      <div class="summary-text" style="color:${i===0?"#e8e4d9":"#847a68"}">${line}</div>
+    </div>`).join("");
+
+  document.getElementById("detail-tags").innerHTML = (a.tags||[]).map(t => `<span class="detail-tag">#${t}</span>`).join("");
+
+  const link = document.getElementById("source-link");
+  link.href = a.url;
+  link.style.border = `1px solid ${c.accent}33`;
+  document.getElementById("source-link-name").style.color = c.light;
+  document.getElementById("source-link-name").textContent = a.source;
+  document.getElementById("source-link-icon").style.color = c.accent;
+
+  document.getElementById("list").classList.add("hidden");
+  document.getElementById("detail").classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+function closeDetail() {
+  document.getElementById("detail").classList.remove("active");
+  document.getElementById("list").classList.remove("hidden");
+}
+
+// ── BACK GESTURE ─────────────────────────────────────────────────
+let touchStartX = 0;
+document.addEventListener("touchstart", e => { touchStartX = e.touches[0].clientX; }, { passive:true });
+document.addEventListener("touchend", e => {
+  if (document.getElementById("detail").classList.contains("active")) {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (dx > 80) closeDetail();
+  }
+}, { passive:true });
+</script>
+</body>
+</html>
