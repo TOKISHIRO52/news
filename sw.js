@@ -1,5 +1,5 @@
-const CACHE_NAME = "hayayomi-news-v1";
-const ASSETS = ["/", "/index.html", "/manifest.json"];
+const CACHE_NAME = "hayayomi-news-v2";
+const ASSETS = ["/news/", "/news/index.html", "/news/manifest.json", "/news/icon-192.png", "/news/icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(

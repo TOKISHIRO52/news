@@ -2,7 +2,7 @@
   "name": "速読みNEWS",
   "short_name": "速読みNEWS",
   "description": "経営者・ビジネス層向け 5行要約ニュースアプリ",
-  "start_url": "/",
+  "start_url": "/news/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f0e0b",
