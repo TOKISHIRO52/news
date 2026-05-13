@@ -4,443 +4,469 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="朝刊">
-<title>朝刊ブリーフィング</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="速読みNEWS">
+<meta name="theme-color" content="#0f0e0b">
+<meta name="description" content="経営者・ビジネス層向け 5行要約ニュースアプリ">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>速読みNEWS</title>
 <style>
-  :root {
-    --bg: #0d0d12;
-    --surface: #141418;
-    --border: #1e1e26;
-    --gold: #c9a84c;
-    --text: #e8e4d9;
-    --muted: #6a6458;
-    --dim: #333;
-  }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Hiragino Sans', 'Yu Gothic', sans-serif; min-height: 100dvh; max-width: 430px; margin: 0 auto; }
-  ::-webkit-scrollbar { display: none; }
-
-  /* Header */
-  #header {
-    background: rgba(13,13,18,0.96);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    position: sticky; top: 0; z-index: 100;
-    border-bottom: 1px solid var(--border);
-    padding-top: env(safe-area-inset-top, 44px);
-  }
-  .header-inner { padding: 14px 20px 12px; display: flex; justify-content: space-between; align-items: flex-end; }
-  .header-date { font-size: 11px; color: var(--dim); margin-bottom: 3px; letter-spacing: 0.04em; }
-  .header-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
-  .header-sources { font-size: 10px; color: #2a2a35; text-align: right; line-height: 1.6; }
-
-  /* Genre tabs */
-  .tabs { display: flex; overflow-x: auto; gap: 8px; padding: 0 20px 14px; scrollbar-width: none; }
-  .tab {
-    flex-shrink: 0; padding: 8px 14px; border-radius: 20px; border: none;
-    background: #1a1a22; color: #666; font-size: 13px; cursor: pointer;
-    display: flex; gap: 5px; align-items: center; transition: all 0.15s;
-    font-family: -apple-system, 'Hiragino Sans', sans-serif;
-  }
-  .tab.active { background: var(--gold); color: #000; font-weight: 700; }
-  .tab-count { background: #252530; border-radius: 10px; padding: 1px 6px; font-size: 10px; color: #444; }
-  .tab.active .tab-count { background: rgba(0,0,0,0.2); color: #000; }
-
-  /* Content */
-  #content { padding-bottom: 40px; }
-
-  /* Section label */
-  .section-label { padding: 18px 20px 8px; font-size: 10px; color: var(--dim); letter-spacing: 0.1em; }
-
-  /* Top card */
-  .top-wrap { padding: 14px 16px 0; }
-  .top-label { font-size: 10px; color: var(--gold); letter-spacing: 0.15em; margin-bottom: 10px; padding-left: 4px; }
-  .top-card {
-    border-radius: 20px; padding: 22px; cursor: pointer;
-    border: 1px solid rgba(255,255,255,0.06);
-    position: relative; overflow: hidden;
-    transition: opacity 0.15s;
-    -webkit-user-select: none; user-select: none;
-  }
-  .top-card:active { opacity: 0.75; }
-  .top-glow { position: absolute; top: 0; right: 0; width: 100px; height: 100px; border-radius: 0 20px 0 0; pointer-events: none; }
-  .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
-  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-  .source-badge { background: rgba(255,255,255,0.06); color: #666; }
-  .top-title { font-size: 18px; font-weight: 700; line-height: 1.45; margin-bottom: 11px; letter-spacing: -0.01em; }
-  .top-lead { font-size: 13px; color: #7a7060; line-height: 1.6; margin-bottom: 14px; letter-spacing: 0.02em; }
-  .top-footer { display: flex; justify-content: space-between; align-items: center; }
-  .tags { display: flex; gap: 6px; }
-  .tag { font-size: 11px; color: #444; }
-  .more-link { font-size: 13px; }
-
-  /* Row */
-  .row {
-    margin: 0 16px; border-bottom: 1px solid #141418;
-    padding: 16px 4px; cursor: pointer;
-    display: flex; gap: 14px; align-items: flex-start;
-    transition: opacity 0.15s;
-    -webkit-user-select: none; user-select: none;
-  }
-  .row:active { opacity: 0.55; }
-  .row:last-child { border-bottom: none; }
-  .row-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; margin-top: 2px; border: 1px solid rgba(255,255,255,0.05); }
-  .row-body { flex: 1; min-width: 0; }
-  .row-meta { display: flex; gap: 6px; margin-bottom: 4px; align-items: center; font-size: 11px; }
-  .row-dot { color: #2a2a35; }
-  .row-source { color: #444; }
-  .row-title { font-size: 15px; font-weight: 600; color: #d0ccbc; margin-bottom: 4px; line-height: 1.4; letter-spacing: -0.01em; }
-  .row-lead { font-size: 12px; color: #555; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  .row-arrow { color: #2a2a35; font-size: 16px; flex-shrink: 0; margin-top: 10px; }
-
-  /* Detail */
-  #detail { display: none; min-height: 100dvh; flex-direction: column; }
-  #detail.active { display: flex; }
-  .detail-header { padding-top: env(safe-area-inset-top, 44px); padding-bottom: 22px; padding-left: 20px; padding-right: 20px; flex-shrink: 0; }
-  .back-btn {
-    background: rgba(255,255,255,0.08); border: none; color: #fff;
-    border-radius: 20px; padding: 8px 16px; font-size: 14px; cursor: pointer;
-    margin-bottom: 18px; display: inline-block;
-    font-family: -apple-system, 'Hiragino Sans', sans-serif;
-  }
-  .detail-title { font-size: 19px; font-weight: 700; line-height: 1.5; letter-spacing: -0.01em; }
-  .detail-body { flex: 1; overflow-y: auto; padding: 22px 20px; }
-  .summary-box { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 18px; }
-  .summary-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
-  .summary-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
-  .summary-num { width: 22px; height: 22px; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
-  .summary-text { font-size: 15px; line-height: 1.65; letter-spacing: 0.02em; }
-  .detail-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
-  .detail-tag { background: #1e1e26; color: #555; padding: 5px 12px; border-radius: 20px; font-size: 12px; }
-  .source-link { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border-radius: 14px; padding: 16px 20px; text-decoration: none; }
-  .source-link-label { font-size: 11px; color: #555; margin-bottom: 4px; }
-  .source-link-name { font-size: 13px; }
-  .source-link-icon { font-size: 20px; }
-
-  .footer-note { text-align: center; padding: 24px 20px 8px; font-size: 10px; color: #1e1e26; }
-
-  /* List view */
-  #list { display: block; }
-  #list.hidden { display: none; }
+  html, body { height: 100%; background: #0f0e0b; }
+  div::-webkit-scrollbar { display: none; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes slideUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
 </style>
 </head>
 <body>
-
-<!-- LIST VIEW -->
-<div id="list">
-  <div id="header">
-    <div class="header-inner">
-      <div>
-        <div class="header-date" id="today-date">読込中...</div>
-        <div class="header-title">朝刊ブリーフィング</div>
-      </div>
-      <div class="header-sources">NHK / 日経<br>Reuters / 時事</div>
-    </div>
-    <div class="tabs" id="tabs"></div>
-  </div>
-  <div id="content"></div>
-</div>
-
-<!-- DETAIL VIEW -->
-<div id="detail">
-  <div class="detail-header" id="detail-header">
-    <button class="back-btn" onclick="closeDetail()">← 戻る</button>
-    <div class="badges" id="detail-badges"></div>
-    <div class="detail-title" id="detail-title"></div>
-  </div>
-  <div class="detail-body">
-    <div class="summary-box" id="summary-box">
-      <div class="summary-label" id="summary-label-el"></div>
-      <div id="summary-rows"></div>
-    </div>
-    <div class="detail-tags" id="detail-tags"></div>
-    <a class="source-link" id="source-link" href="#" target="_blank" rel="noopener noreferrer">
-      <div>
-        <div class="source-link-label">元記事を開く</div>
-        <div class="source-link-name" id="source-link-name"></div>
-      </div>
-      <div class="source-link-icon" id="source-link-icon">↗</div>
-    </a>
-  </div>
-</div>
-
-<script>
-// ── DATA ──────────────────────────────────────────────────────────
+<div id="root"></div>
+<script type="module">
+// ── DATA ──────────────────────────────────────────────────────────────────
 const GENRES = [
-  { id:"all",           label:"全て",   emoji:"📰" },
-  { id:"international", label:"国際",   emoji:"🌏" },
-  { id:"politics",      label:"政治",   emoji:"🏛️" },
-  { id:"economy",       label:"経済",   emoji:"📈" },
-  { id:"society",       label:"社会",   emoji:"🏙️" },
+  { id:"international", label:"国際",        color:"#2563eb" },
+  { id:"politics",      label:"政治",        color:"#7c3aed" },
+  { id:"economy",       label:"経済・市場",  color:"#059669" },
+  { id:"tech",          label:"テクノロジー", color:"#d97706" },
+  { id:"society",       label:"社会",        color:"#dc2626" },
 ];
-
-const COLORS = {
-  politics:      { bg:"#15192a", accent:"#4a7fc1", light:"#7aabea" },
-  economy:       { bg:"#14221a", accent:"#3a9c5a", light:"#6ecf8a" },
-  international: { bg:"#221525", accent:"#9c4ab0", light:"#cd7ee0" },
-  society:       { bg:"#22190e", accent:"#c9863c", light:"#e8ad6a" },
-};
-function col(genre) { return COLORS[genre] || { bg:"#181820", accent:"#c9a84c", light:"#e0c87a" }; }
 
 const NEWS = [
-  {
-    id:"1", genre:"international", importance:"high",
-    title:"米、ホルムズ海峡で足止め船舶の退避支援開始",
-    source:"NHK・Bloomberg", url:"https://news.web.nhk/newsweb",
-    summary:[
-      "トランプ大統領が「プロジェクト・フリーダム」を発表し、ホルムズ海峡で足止めの中立船舶の退避支援を5月4日朝より開始した。",
-      "対象は紛争に無関係な国の船舶で、妨害があれば「力ずくで対処する」と強調した。",
-      "イランとの協議を「非常に前向き」と評価する一方、軍事・外交の両面が並行する異例の展開。",
-      "イランはこの動きを「停戦違反」と強くけん制し、偶発的な衝突リスクが高まっている。",
-      "日本の原油輸入の約9割が通過するホルムズ海峡の動向は、エネルギー価格と物価に直結する。",
-    ],
-    tags:["イラン情勢","エネルギー","トランプ"],
-  },
-  {
-    id:"2", genre:"politics", importance:"high",
-    title:"日豪首脳がレアアース6事業で経済安保共同宣言",
-    source:"NHK・日本経済新聞", url:"https://www.nikkei.com/article/DGXZQOUA306M60Q6A430C2000000/",
-    summary:[
-      "高市首相とオーストラリアのアルバニージー首相がキャンベラで会談し、経済安全保障の共同宣言を発出した。",
-      "レアアースなど重要鉱物を共同開発する6事業を指定し、両政府が投資・助成金で支援することを明記した。",
-      "LNG輸入の4割・石炭の6割を豪州に依存する日本にとって安定的な資源調達が重要課題となっている。",
-      "共同宣言では中国を念頭に「重要鉱物への輸出規制に強い懸念」を表明した。",
-      "高市首相は「日豪は準同盟国と言える関係」と強調し、インド太平洋での安保連携深化を示した。",
-    ],
-    tags:["経済安保","資源","日豪関係"],
-  },
-  {
-    id:"3", genre:"international", importance:"medium",
-    title:"イランが停戦・封鎖解除など14項目の和平案を提示",
+  // 国際
+  { id:"w1", genre:"international", importance:"high",
+    title:"トランプ「停戦は生命維持装置の状態」　米中首脳会談でイラン議題へ",
+    source:"NHK / Bloomberg", url:"https://news.web.nhk/newsweb",
+    summary:["トランプ大統領は12日、米ロ・ウクライナ停戦を「もろく生命維持装置につながれた状態」と表現し、恒久停戦への懐疑的な見方を示した。","14〜15日の米中首脳会談でイラン情勢とエネルギー問題も議題にすると明言し、交渉が多層化している。","ホルムズ海峡の通航正常化に向けた具体的な進展はまだ見られず、原油価格の高止まりが続いている。","米中首脳会談の結果次第でエネルギー・貿易・安保の三局面が同時に動く可能性があり、日本も固唾をのんで注視している。","イランは戦闘終結と核合意をセットで求める立場を維持しており、交渉の着地点はまだ見えていない。"],
+    tags:["米中首脳会談","イラン交渉","停戦"] },
+  { id:"w2", genre:"international", importance:"medium",
+    title:"ハンタウイルス感染者6人に拡大　WHO「42日間の隔離を推奨」",
+    source:"NHK / WHO", url:"https://news.web.nhk/newsweb",
+    summary:["WHOはクルーズ船でのハンタウイルス集団感染について、全乗員・乗客に42日間の隔離を推奨すると発表した。","感染者は新たに1人増えて計6人となり、スペインで下船した約30人への追跡調査が続いている。","SNSでは根拠のない不安をあおる投稿が拡散しており、WHOが「過度な恐怖は不要」と注意喚起を出した。","乗船していた日本人1人への感染は確認されておらず、外務省が帰国後の経過観察を引き続き指示している。","42日間という長期隔離は過去のエボラ対応を参考にしたもので、感染症対応としては異例の長さとなっている。"],
+    tags:["ハンタウイルス","WHO","感染症"] },
+  { id:"w3", genre:"international", importance:"medium",
+    title:"EUがユダヤ人入植者団体に新制裁　欧米の中東政策に温度差",
     source:"NHK", url:"https://news.web.nhk/newsweb",
-    summary:[
-      "イランは仲介国パキスタンを通じて米国に14項目の和平提案を提示した。",
-      "封鎖解除・今後攻撃しないとの保証・新たな海峡管理の仕組みの確立などを含む。",
-      "米国は核問題の先行合意を求める立場を維持しており、交渉の構造的な乖離が続く。",
-      "停戦中もイランはIRGCを通じた通航料徴収を続けており、海峡の商業利用は正常化していない。",
-      "原油価格は危機前の約2倍の1バレル108ドル水準が続き、日本の物価への影響が長期化する見通し。",
-    ],
-    tags:["イラン","中東","停戦交渉"],
-  },
-  {
-    id:"4", genre:"economy", importance:"medium",
-    title:"ホルムズ危機で原油2倍・LNG40%高騰　日本企業に調達危機",
-    source:"日本経済新聞", url:"https://www.nikkei.com/",
-    summary:[
-      "ホルムズ海峡危機を受け、原油価格は危機前比約2倍の108ドル、アジアのLNG価格は40%超上昇している。",
-      "主要海運各社はペルシャ湾向け予約を停止し、喜望峰回りに切り替え、リードタイムが最大21日延長される。",
-      "三菱UFJ銀行の分析では封鎖が長期化した場合、円ドル相場が160〜165円まで円安が進む可能性がある。",
-      "LPG価格は前月比最大80%急騰し、プラスチック・化学製品の製造コストに直撃している。",
-      "企業は「再開待ち」でなく「制約付き運用」を前提とした調達戦略への転換が求められる。",
-    ],
-    tags:["原油高","エネルギー","円安"],
-  },
-  {
-    id:"5", genre:"society", importance:"medium",
-    title:"低気圧で全国に強風被害　沖縄は梅雨入り",
+    summary:["EUはイスラエルのユダヤ人入植者団体などに新たな制裁を科すことで加盟国が合意したと発表した。","米国がイスラエル支持を維持する中、欧州はパレスチナ問題での独自路線を鮮明にする動きを強めている。","この制裁はトランプ政権との摩擦を生む可能性があり、欧米間の外交的緊張が高まっている。","中東情勢をめぐる欧米の温度差は、ホルムズ危機の解決策をめぐる協議にも影響を与えかねない。","日本はEU・米国双方との関係を維持しつつ独自の外交バランスを取る難しい立場に置かれている。"],
+    tags:["EU制裁","イスラエル","中東"] },
+  { id:"w4", genre:"international", importance:"medium",
+    title:"中国4月輸出14%増　電動車・太陽光が牽引も原油高が輸入を圧迫",
+    source:"NHK / 日経", url:"https://www.nikkei.com/",
+    summary:["中国税関総署が発表した4月の輸出額は前年同月比14%増と市場予想を上回る伸びとなった。","電気自動車・太陽光パネル・半導体など高付加価値品の輸出が牽引し、対欧米での貿易摩擦が再燃しそうだ。","一方ホルムズ危機による原油高が輸入額を押し上げており、5月以降の貿易収支への影響が注目されている。","中国は中東仲介外交で存在感を高めており、14〜15日の米中首脳会談での交渉力として活用する見通し。","日本にとっても最大の貿易相手国・中国の動向は輸出戦略と供給網の安定に直結する重要指標だ。"],
+    tags:["中国経済","輸出","米中貿易"] },
+  { id:"w5", genre:"international", importance:"medium",
+    title:"英地方選でリフォームUK躍進　与党・労働党が大敗",
+    source:"NHK / Reuters", url:"https://news.web.nhk/newsweb",
+    summary:["英地方選挙で与党・労働党がイングランド全域で大幅に議席を失い、大敗した。","移民規制を掲げる右派政党「リフォームUK」が予想を上回る躍進を見せ、既成政党離れが鮮明となった。","スターマー首相は「厳粛に受け止める」とコメントしたが、進退問題への発展が注目されている。","緑の党も都市部で支持を伸ばし、英国政治の多党化・分極化が一段と進んだ選挙結果となった。","欧州全体でポピュリスト政党が台頭する流れの中、英国もその例外ではないことが改めて示された。"],
+    tags:["英国選挙","欧州政治","右派"] },
+  { id:"w6", genre:"international", importance:"medium",
+    title:"ドイツ高級車4社の中国販売17%減　EV新興勢に押される",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["BMW・ベンツなどドイツ高級車4社の2026年1〜3月期の中国販売台数が前年同期比17%減と大幅に落ち込んだ。","先端技術を搭載した中国の新興EVブランドが躍進する一方、欧州勢は魅力的な新型車を出せずにいる。","課税基準の変更が輸入車に不利に働いており、欧州勢の中国ビジネスは構造的な逆風に直面している。","BMWは純利益が前年同期比23%減となり、欧州車6社の決算は軒並み厳しい内容となった。","日本の自動車大手も中国市場でシェアを失っており、EV化対応の遅れが業績に直結してきた局面だ。"],
+    tags:["ドイツ車","中国市場","EV"] },
+  { id:"w7", genre:"international", importance:"medium",
+    title:"米中間選挙まで半年　共和党の両院多数派維持が最大焦点",
     source:"NHK", url:"https://news.web.nhk/newsweb",
-    summary:[
-      "発達した低気圧の影響で5月4日、全国各地で強風被害が相次いでいる。",
-      "静岡・沼津では電柱が倒れ国道が一時通行止めに、宇都宮でも複数の住宅で屋根や塀に被害が出た。",
-      "東北地方は暴風警戒が続き、小田急小田原線（秦野〜小田原）は午前中に運転を一時見合わせた。",
-      "気象庁は沖縄・奄美地方の梅雨入りを発表し、例年より数日早い梅雨入りとなった。",
-      "4月は西日本を中心に史上3番目の高温が記録されており、今後の気象変動が懸念される。",
-    ],
-    tags:["気象","強風","梅雨"],
-  },
-  {
-    id:"6", genre:"society", importance:"medium",
-    title:"自転車交通違反「青切符」全国で842件交付",
+    summary:["11月の米中間選挙まで約半年となり、共和党が両院の多数派を維持できるかが最大の焦点だ。","イラン情勢や関税政策への国民の評価が選挙結果を左右するとされ、与党への風向きは不透明だ。","民主党は経済格差や医療費問題を争点に議席奪還を狙い、激戦州での攻勢を強めている。","トランプ政権の2年間の政策実績が問われる選挙で、結果次第でトランプ後半に大きく影響する。","日本の通商・安保政策の行方にも直結するため、選挙動向を注視する必要がある。"],
+    tags:["米中間選挙","トランプ","米国政治"] },
+  { id:"w8", genre:"international", importance:"medium",
+    title:"ロシア・ウクライナ3日間停戦が終了　恒久停戦の道筋見えず",
+    source:"NHK / Bloomberg", url:"https://news.web.nhk/newsweb",
+    summary:["米国が仲介したロシア・ウクライナの3日間（9〜11日）停戦が終了し、恒久停戦交渉の見通しは依然不透明だ。","停戦中に1000人ずつの捕虜交換が行われ、人道面での進展は見られた。","トランプ大統領は「停戦はもろい」と表現しており、戦闘再開への警戒が続いている。","ゼレンスキー大統領は「ロシアが合意を守る保証がない」と恒久停戦への慎重姿勢を示している。","日本は復興支援を念頭に置きつつウクライナ支援継続の方針を維持しており、情勢を注視している。"],
+    tags:["ウクライナ","停戦","ロシア"] },
+  { id:"w9", genre:"international", importance:"medium",
+    title:"NATO事務総長が訪日　インド太平洋での防衛協力強化を確認",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:["NATO事務総長が訪日し、高市首相・木原防衛相と会談してインド太平洋地域での防衛協力強化を確認した。","NATOの日本接近は中国・ロシアへの対抗を念頭に置いたもので、中国側は強い懸念を表明している。","日本はNATOのパートナー国として情報共有や共同訓練の拡充を検討しており、安保政策の転換が続く。","ホルムズ情勢を受けてエネルギー安保と安全保障政策の一体化が進んでおり、NATO連携はその一環だ。","中国は「アジア太平洋のNATO化」と批判しており、今後の地域安保秩序に大きな影響を与えそうだ。"],
+    tags:["NATO","日本","安全保障"] },
+  { id:"w10", genre:"international", importance:"medium",
+    title:"イラン、14項目の和平案を米に再提示　核問題での先行合意を要求",
+    source:"Reuters / NHK", url:"https://news.web.nhk/newsweb",
+    summary:["イランはホルムズ封鎖解除・停戦保証などを含む14項目の和平案を改めて米国に提示した。","焦点の核問題についてはウラン濃縮の上限設定と引き換えに制裁解除を求める立場を維持している。","米国は核問題の先行合意を求める立場を崩しておらず、交渉の構造的な乖離が続いている。","停戦中もIRGCを通じた通航料徴収が続いており、ホルムズ海峡の商業利用は正常化していない。","原油価格は危機前の2倍近い水準が続いており、交渉の長期化が日本の物価に影響し続ける見通し。"],
+    tags:["イラン","核交渉","ホルムズ"] },
+  // 政治
+  { id:"p1", genre:"politics", importance:"high",
+    title:"長期金利2.54%　27年ぶり高水準　財政・住宅ローンに打撃",
+    source:"NHK / 日経", url:"https://news.web.nhk/newsweb",
+    summary:["12日の債券市場で長期金利（10年国債利回り）が2.54%まで上昇し、1999年2月以来約27年ぶりの高水準となった。","米国の長期金利上昇と日銀の追加利上げ観測が重なり、日本の金利が急速に上昇している。","住宅ローン金利の上昇は不動産市場の冷却につながる一方、国債利払い費の増加が財政を直撃する。","高市政権の積極財政路線と、金利上昇による財政悪化懸念が衝突しつつある。","日銀は「経済・物価情勢を見極めながら慎重に判断する」と述べており、次回利上げの時期に市場の関心が集まっている。"],
+    tags:["長期金利","日銀","財政"] },
+  { id:"p2", genre:"politics", importance:"medium",
+    title:"NHK世論調査　高市内閣支持率61%　食料品消費税ゼロへの期待も",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:["NHKの最新世論調査で高市内閣の支持率は61%、不支持率は23%となり、堅調な支持が続いている。","食料品の消費税について「早期にゼロ以外にも引き下げを」と答えた人が48%に上り、税率引き下げへの期待が強い。","自民党の支持率は35.4%、「支持政党なし」は37.1%で無党派層が最大勢力となっている。","参院選を控えて各党の政策発信が活発化しており、消費税・エネルギー・社会保障が主要争点になっている。","高い内閣支持率の背景にはホルムズ情勢での外交対応評価があるとみられ、参院選の行方に影響しそうだ。"],
+    tags:["世論調査","高市内閣","消費税"] },
+  { id:"p3", genre:"politics", importance:"medium",
+    title:"高市首相が6月訪米を正式調整　米中会談後の対応を協議へ",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["高市首相が6月上旬の訪米とトランプ大統領との首脳会談を正式に調整していることが明らかになった。","14〜15日の米中首脳会談の結果を踏まえ、日本が取るべき経済安保・通商政策の方向性を協議する方針だ。","エネルギー安保・AI半導体・重要鉱物の供給網整備の3点が主な議題となる見通し。","与党内では「対中交渉で日本が置き去りにされるリスク」を懸念する声もあり、訪米の時機が焦点となっている。","参院選前の外交成果として国内にアピールできる合意を得られるかが高市政権の政治的課題となっている。"],
+    tags:["高市首相","日米","外交"] },
+  { id:"p4", genre:"politics", importance:"medium",
+    title:"自民が宇宙安保提言へ　安保3文書改定議論が加速",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:["自民党は宇宙領域での安全保障確保に向けた提言を近くまとめ、安保3文書の改定議論に反映させる方針だ。","ホルムズ危機で通信衛星・偵察衛星の重要性が改めて認識されており、宇宙安保の強化が急務となっている。","自衛隊の宇宙作戦部隊の拡充と、同盟国との衛星情報共有の枠組み強化が提言の柱となる見通し。","中国・ロシアが宇宙空間での対衛星兵器開発を進めているとされ、日本の宇宙インフラへの脅威が高まっている。","民間の宇宙スタートアップとの連携によるデュアルユース技術の活用も盛り込まれる予定。"],
+    tags:["宇宙安保","自民党","安保"] },
+  { id:"p5", genre:"politics", importance:"medium",
+    title:"国民民主が「1人5万円給付」を要求　参院選へ政策競争が激化",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["国民民主党が参院選前の政策協議で「国民1人あたり5万円の現金給付」を高市政権への交渉材料として提示した。","エネルギー価格高騰による家計負担増への対応が名目だが、野党側の選挙対策の側面もある。","高市政権は「責任ある積極財政」を掲げており、大規模な現金給付には財政規律の観点から慎重な姿勢を示している。","維新は原子力発電の再稼働加速を主張しており、エネルギー政策の方向性で各党の立ち位置が鮮明になっている。","物価高対策としての給付金は国民の支持を得やすい一方で、財源確保と財政への影響が課題となる。"],
+    tags:["国民民主","給付金","参院選"] },
+  { id:"p6", genre:"politics", importance:"medium",
+    title:"皇位継承　公明党が見解　与党は皇室典範改正を求める",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:["安定的な皇位継承をめぐり、公明党（中道）が12日にも党見解をとりまとめる方向で調整を行っている。","与党は皇室典範の改正による女系・女性天皇を認める方向での議論加速を求めており、自民との調整が焦点だ。","自民党内には保守派を中心に慎重論が根強く、参院選前の対立激化を避けたい思惑も絡んで調整が難航している。","皇位継承問題は長年先送りされてきたが、皇族数の減少が続く中で議論の先送りが難しくなっている。","NHK世論調査でも皇位継承の安定化を求める声が多数を占めており、国民の関心が高い。"],
+    tags:["皇位継承","皇室典範","公明党"] },
+  { id:"p7", genre:"politics", importance:"medium",
+    title:"衆院憲法審　緊急事態条項を集中審議　維新が独自案を提示",
+    source:"時事通信", url:"https://www.jiji.com/",
+    summary:["衆院憲法審査会で緊急事態条項の創設をめぐる集中審議が行われ、与野党間で活発な論戦が展開された。","自民・公明は「ホルムズ危機などを踏まえた危機管理の観点から必要」と改憲の必要性を主張した。","立憲民主党は「既存の法制度で対応可能で、権力集中につながる懸念がある」として慎重姿勢を崩さなかった。","日本維新の会は「議員任期の延長に限定すれば合意形成が可能」との独自案を提示し注目を集めた。","参院選前の改憲発議は困難との見方が強いが、今国会での議論の積み上げが次の節目につながる見通しだ。"],
+    tags:["憲法改正","緊急事態","国会"] },
+  { id:"p8", genre:"politics", importance:"medium",
+    title:"サイバー対処能力強化法が10月施行　企業対応が急務に",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["政府のサイバー対処能力強化法が10月に施行され、重要インフラ企業のサイバーセキュリティ対応が法的義務になる。","対応が不十分と判断された企業は政府調達やサプライチェーンから排除されるリスクが生じる。","中小企業を含む幅広い企業が対応を迫られており、専門人材の不足と対応コストが深刻な課題となっている。","NATO連携強化やホルムズ情勢を背景に、安全保障とサイバーセキュリティの一体化が急速に進んでいる。","企業の平均対応コストは数千万円規模とされ、中小企業への支援策の充実が政府の急務となっている。"],
+    tags:["サイバー","法律","企業"] },
+  { id:"p9", genre:"politics", importance:"medium",
+    title:"高市首相「新たな投資枠」創設を検討指示　エネルギー・AI・防衛に重点",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:["高市首相は予算編成の見直しに向けて「新たな投資枠」を創設する検討を指示したことを明らかにした。","エネルギー安保・半導体・AI・防衛などの戦略分野への重点投資を可能にする予算の枠組みを新設する方向だ。","長期金利の急上昇で国債の利払い費が膨らむ中での積極財政路線には、財政規律の観点から与党内でも慎重論がある。","国民民主党が求める「1人5万円の現金給付」には慎重な姿勢を維持しつつ、投資型財政出動で差別化を図る狙い。","参院選前の経済対策として打ち出すことで、有権者へのアピールと長期的な成長戦略の両立を目指している。"],
+    tags:["財政政策","投資枠","予算"] },
+  { id:"p10", genre:"politics", importance:"medium",
+    title:"日豪首脳がレアアース6事業で経済安保共同宣言　中国依存を緩和へ",
+    source:"NHK / 日経", url:"https://www.nikkei.com/",
+    summary:["高市首相とオーストラリアのアルバニージー首相がキャンベラで会談し、経済安全保障の共同宣言を発出した。","レアアースなど重要鉱物の共同開発6事業を指定し、両政府が投資・助成金で支援する枠組みを設けた。","共同宣言では中国を念頭に「重要鉱物への輸出規制に強い懸念」と表明し、対中経済依存の低減を図る姿勢を鮮明にした。","アルバニージー首相は「不確実な時代だからこそ友情の価値は一層高まる」と関係強化を強調した。","日豪は今年で外交関係樹立50周年を迎えており、準同盟関係として安保・経済両面の連携が加速している。"],
+    tags:["経済安保","日豪","資源"] },
+  // 経済
+  { id:"e1", genre:"economy", importance:"high",
+    title:"3月家計消費が実質2.9%減　4カ月連続マイナス　エネルギー高が直撃",
+    source:"NHK / 総務省", url:"https://news.web.nhk/newsweb",
+    summary:["総務省が発表した3月の家計調査で、2人以上の世帯の実質消費支出は前年同月比2.9%減と4カ月連続で減少した。","ホルムズ危機に伴う光熱費・ガソリン代の急騰が家計を直撃しており、消費の落ち込みが長期化している。","一方で家事用品の「買いだめ」の動きも確認されており、先行きへの不安が消費行動に影響していることが分かった。","名目賃金は上昇しているが物価上昇がそれを上回っており、実質賃金のマイナスが消費の足を引っ張っている。","政府は「新たな投資枠」創設などの対策を検討しているが、エネルギー価格の高止まりが続く限り回復は難しい。"],
+    tags:["家計消費","物価高","実質賃金"] },
+  { id:"e2", genre:"economy", importance:"medium",
+    title:"日経平均が6万3000円台　ナスダック・S&P500も最高値更新",
+    source:"NHK / 日経", url:"https://www.nikkei.com/",
+    summary:["11日の東京株式市場で日経平均株価は6万3000円台を回復し、2営業日ぶりに最高値圏に戻った。","米ナスダックとS&P500指数も最高値を更新しており、市場では「NACHO」と呼ばれる強気相場の表現が広まっている。","米中首脳会談への期待と米イラン交渉進展への楽観が重なり、リスクオン姿勢が続いている。","ただし長期金利の27年ぶり高水準が株式市場の上値を抑える要因となっており、過熱感への警戒も出ている。","野村証券は「停戦交渉の一進一退が相場の方向性を左右する綱渡りの展開が続く」と分析している。"],
+    tags:["日経平均","米株高","NACHO"] },
+  { id:"e3", genre:"economy", importance:"medium",
+    title:"WTI原油が95ドル台に急落　ホルムズ交渉進展で正常化期待",
+    source:"Bloomberg / 日経", url:"https://www.nikkei.com/",
+    summary:["ニューヨーク原油先物（WTI）がイランとの停戦合意期待から1日で7%超急落し、95ドル台まで下落した。","ホルムズ危機前の60ドル台からは依然として高水準だが、107〜112ドル近辺からの急落は市場に安心感をもたらした。","資源エネルギー庁はレギュラーガソリンの店頭価格が数週間以内に1〜3円程度下落する見通しを示した。","ただし停戦交渉が決裂した場合は原油価格が再び急騰するリスクがあり、市場参加者は楽観視を避けている。","日本の輸入物価指数への影響は1〜2カ月後に反映されるため、家計への恩恵が出るのはまだ先になる見込み。"],
+    tags:["原油価格","ガソリン","エネルギー"] },
+  { id:"e4", genre:"economy", importance:"medium",
+    title:"AMD純利益95%増　AIエージェント需要でCPU再評価",
+    source:"Bloomberg / 日経", url:"https://www.nikkei.com/",
+    summary:["米AMDが発表した2026年1〜3月期の純利益は前年同期比95%増の約2200億円となり、市場予想を大幅に上回った。","AIエージェントの普及でCPU需要が爆発的に伸びており、データセンター部門の売上高は前年同期比57%増を記録した。","第2四半期の売上高ガイダンスは112億ドルと市場予想の105億ドルを超え、株価は時間外で急伸した。","NVIDIAの代替品としてAMD製GPU・CPUへの需要が高まっており、AI半導体市場の競争構図が変わりつつある。","日本の半導体関連株や製造装置メーカーへの波及効果も期待されており、東京市場でも物色が続く見通し。"],
+    tags:["AMD","AI半導体","決算"] },
+  { id:"e5", genre:"economy", importance:"medium",
+    title:"首都圏中古マンションPERが32倍　新築超える割高感が鮮明",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["首都圏の中古マンション価格と年間賃料の比率（PER）が32倍に達し、新築マンションの割高感を超えてきた。","株高・円安による資産インフレが不動産市場にも波及しており、東京都心部の物件は購入後の利回り低下が顕著だ。","日銀の追加利上げ観測が高まる中、住宅ローン金利の上昇が購買意欲を冷やすリスクが浮上している。","外国人投資家による都心物件の購入が続いており、実需と投資マネーが混在した複雑な需給構造となっている。","専門家は「金利上昇局面では価格調整が起きやすい」と警告しており、不動産市場の過熱を注視する声が増えている。"],
+    tags:["不動産","マンション","資産"] },
+  { id:"e6", genre:"economy", importance:"medium",
+    title:"2026年初任給ランキング　上位2社が月60万円超に",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["2026年度の企業初任給ランキングで、上位2社が月額60万円を超えたことが日経の調査で明らかになった。","AI・半導体・金融分野の外資系・スタートアップが上位に集中しており、人材獲得競争が激化している。","大手メーカーや総合商社でも30〜40万円台への引き上げが相次いでおり、初任給の二極化が進んでいる。","最低賃金の引き上げ圧力と相まって中小企業の人件費負担が増加しており、構造的な問題が生じている。","物価上昇との競争が続いており「名目賃金は上がっているが実質賃金の改善は鈍い」状況が続いている。"],
+    tags:["初任給","賃金","労働市場"] },
+  { id:"e7", genre:"economy", importance:"medium",
+    title:"カルビーが一部商品パッケージを白黒に変更　ナフサ高騰でコスト削減",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:["大手菓子メーカーのカルビーが、ナフサ高騰を受け一部製品のパッケージを白黒2色に切り替えると取引先に通知した。","印刷インキの原料となるナフサの価格が急騰しており、カラー印刷のコストを削減する苦肉の策だ。","佐藤官房副長官は12日、「政府として関係企業に聴き取りを行う予定」と対応に乗り出す姿勢を示した。","同様のコスト削減の動きは食品・日用品業界全体に広がりつつあり、消費者の目に見える形で物価高の影響が現れ始めた。","エネルギー価格の高騰が原材料→パッケージ→最終商品へと波及する「コストプッシュ」のサイクルが鮮明になっている。"],
+    tags:["カルビー","ナフサ","物価"] },
+  { id:"e8", genre:"economy", importance:"medium",
+    title:"日産・ホンダがEV戦略を修正　ハイブリッドを主軸に転換",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["日産が欧州で従業員の1割削減と工場統合を発表し、ホンダもカナダのEV工場建設を無期限凍結した。","両社ともハイブリッド車を北米・欧州戦略の軸に据える方向に転換し、日本の電動化戦略の見直しが鮮明になった。","EV需要の伸び悩みとホルムズ危機による原材料費高騰が追い打ちをかけており、収益圧力が急速に高まっている。","中国の新興EVブランドとの競争激化も背景にあり、欧州市場でのドイツ車4社の販売も17%減となる厳しい環境だ。","自動車産業のEVシフトのペースが世界的に落ち着いてきており、戦略の柔軟な見直しが各社に求められている。"],
+    tags:["EV","日産","ホンダ"] },
+  { id:"e9", genre:"economy", importance:"medium",
+    title:"中東エネルギー施設修復に最大9兆円　供給正常化まで数年か",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["米イラン衝突で損傷した中東のエネルギー関連施設の修復費用が最大9兆円に達するとの試算が調査会社から出た。","石油・ガス精製設備や海底パイプラインの復旧には数年単位の時間がかかる見通しだ。","修復期間中の供給不足が長期化すれば原油・LNG価格のさらなる高騰につながりかねない。","日本のエネルギー安全保障の観点から、代替調達先の多角化と省エネ投資の加速が一層重要になっている。","経済産業省は関連企業への緊急ヒアリングを実施し、エネルギー安定供給の対策を検討している。"],
+    tags:["エネルギー","中東","復旧"] },
+  { id:"e10", genre:"economy", importance:"medium",
+    title:"円相場157円台　米長期金利上昇で円安圧力が再燃",
+    source:"日経 / Bloomberg", url:"https://www.nikkei.com/",
+    summary:["円相場は12日、米国の長期金利上昇を受けて1ドル＝157円台で推移しており、円安圧力が再燃している。","日米の金利差拡大が円売りドル買いを誘発しており、財務省・日銀による介入への警戒感が高まっている。","輸出企業には追い風だが、エネルギー輸入コストの観点からは円高が望ましく、経済への影響は二面的だ。","三菱UFJ銀行の分析では封鎖が長期化した場合、160〜165円まで円安が進む可能性があると指摘している。","日銀の追加利上げ期待が円安の歯止めになるとの見方もあるが、利上げのタイミングには不確実性が残る。"],
+    tags:["円安","為替","金利差"] },
+  // テクノロジー
+  { id:"t1", genre:"tech", importance:"high",
+    title:"アンソロピックが「Claude Sonnet 4」正式公開　推論・コード性能が大幅向上",
+    source:"アンソロピック / 日経クロステック", url:"https://xtech.nikkei.com/",
+    summary:["アンソロピックが最新モデル「claude-sonnet-4-20250514」を正式公開し、推論・コーディング・マルチモーダル性能が大幅に向上した。","コーディング補助機能「Claude Code」がアップデートされ、長時間の自律的なソフトウェア開発タスクに対応できるようになった。","前モデル比でベンチマークスコアが20〜30%向上しており、GPT-4oやGemini Ultraとの競争が一段と激化している。","日本の企業・スタートアップへの導入事例が急増しており、業務自動化や顧客対応AIとしての活用が本格化している。","CEOのダリオ・アモデイ氏は「AIがソフトウェアエンジニアの仕事の大部分を担う時代が来年にも到来する」と予測した。"],
+    tags:["Claude","アンソロピック","AI"] },
+  { id:"t2", genre:"tech", importance:"medium",
+    title:"文科省が高校国語を見直し　「AI時代に文学の学びを」科目再編案",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:["文部科学省はAI時代に対応した高校国語教育の見直し案を提示し、文学・論理・情報の科目構成を再編する方針を示した。","AIが文章の生成・要約・翻訳を担う時代に「人間ならではの文学的感受性と批判的思考力を育む必要がある」と強調した。","現行の「現代の国語」「言語文化」を再編し、AIリテラシーと文学的読解力を統合した新科目の創設が検討されている。","教育現場ではすでにAIを使ったレポート作成が常態化しており、評価方法の見直しも急務となっている。","2028年度からの新課程実施に向けて今後パブリックコメントを実施し、年内に最終案をまとめる予定。"],
+    tags:["教育改革","AI時代","国語"] },
+  { id:"t3", genre:"tech", importance:"medium",
+    title:"「バイブコーディング」が開発現場を変革　自然言語でソフト開発が主流に",
+    source:"日経クロステック", url:"https://xtech.nikkei.com/",
+    summary:["自然言語でソフトウェアを開発する「バイブコーディング」が2026年の開発現場で急速に普及している。","開発者の役割が「コードを書く人」から「仕様を定義し検証する人」へとシフトし、必要スキルが大きく変わっている。","Claude CodeやGitHub Copilotなどのツールが実務で使われ始め、中小企業でもAI活用開発が可能になってきた。","日経クロステックは「2026年に世界を変える技術」の一つにバイブコーディングを選定している。","プログラミング教育のあり方や、エンジニアの採用・評価基準の見直しが急務となっている。"],
+    tags:["バイブコーディング","開発","エンジニア"] },
+  { id:"t4", genre:"tech", importance:"medium",
+    title:"富士通・ラピダス連携でソブリンAI基盤構築へ　外資依存から脱却",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["富士通が次世代CPU開発でラピダスと連携し、外資依存から脱却した「ソブリン（主権）AI」インフラ構築を本格化する。","NTT・ソフトバンクも国内AIインフラ整備を加速させており、ビッグテック依存からの脱却が国家安保上の課題となっている。","政府のAI基本計画では「利活用から開発へのサイクルを回す反転攻勢」を明記しており、官民連携が本格化する。","アンソロピックCEOが「中国が半年でMythos並みAIを開発可能」と警告したことも、国産AI基盤強化の機運を高めている。","ラピダスとの連携が軌道に乗れば、日本独自の半導体・AI基盤が2030年代に実現する可能性が出てくる。"],
+    tags:["ソブリンAI","富士通","ラピダス"] },
+  { id:"t5", genre:"tech", importance:"medium",
+    title:"AIエージェントの自律稼働が20時間超へ　2026年末に到達予測",
+    source:"日経ビジネス", url:"https://business.nikkei.com/",
+    summary:["AIが自律的に連続稼働できる時間は現在約2.5時間だが、2026年末には20時間超に達するとの予測が示された。","これは設計・バグ修正・資料作成など複数日にわたる複雑な業務をAIが一人で完遂できるレベルに相当する。","ガートナージャパンは2026年の戦略的テクノロジートレンドに「マルチエージェント・システム」を選定した。","日本企業はRAGの精度問題で苦戦する段階にある企業も多く、エージェント実装の成否が今後の競争力を左右する。","AIをツールとして使う段階から複数AIを采配する「オーケストレーター」人材への需要が急増している。"],
+    tags:["AIエージェント","自律AI","DX"] },
+  { id:"t6", genre:"tech", importance:"medium",
+    title:"LINEヤフー川辺氏が「AIソロプレナー」起業へ　従業員ゼロで事業展開",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["6月にLINEヤフー会長を退任する川辺健太郎氏が、AIを活用し従業員を雇わず事業展開する「AIソロプレナー」として起業することを発表した。","「人間中心の事業よりAI中心の事業の生産性が必ず高くなる」として、新しい起業モデルを提示した。","30年にわたり日本のインターネット業界をけん引してきた経営者の転身は、業界に大きな波紋を呼んでいる。","スタートアップ界では「人を雇う前にAIで検証する」流れが加速しており、雇用市場への影響が注目される。","AIエージェントが業務の大半を担う「デジタルワーカー元年」と呼ばれる2026年を象徴する出来事となっている。"],
+    tags:["AIソロプレナー","LINEヤフー","起業"] },
+  { id:"t7", genre:"tech", importance:"medium",
+    title:"JAMSTECが日本近海で新種の深海生物38種を発見",
+    source:"NHK / JAMSTEC", url:"https://news.web.nhk/newsweb",
+    summary:["海洋研究開発機構（JAMSTEC）が日本近海の深海調査で新種の生物38種を発見したと発表した。","水深4000〜6000メートルの超深海帯から採取された生物で、発光器官を持つ甲殻類や新種の深海魚が含まれる。","AIを活用した画像解析技術により、従来の目視確認では見落とされていた微小な生物の識別が可能になった。","深海生物は新薬・新素材の開発に応用できる可能性があり、バイオテクノロジーへの応用が期待されている。","地球上の生物種の多様性解明に貢献する発見であり、国際的な注目を集めている。"],
+    tags:["深海生物","JAMSTEC","科学"] },
+  { id:"t8", genre:"tech", importance:"medium",
+    title:"核融合発電の高温超電導コイル開発が加速　2030年代実証へ",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["核融合発電の実用化に向けた鍵を握る高温超電導コイルの開発が国内外で加速しており、2030年代の実証を目指す動きが本格化している。","中東エネルギー危機を受け、脱炭素と安定供給を両立できる核融合への期待が政府・民間投資家の間で急速に高まっている。","日本では量子科学技術研究開発機構（QST）が国際核融合実験炉「ITER」との連携を強化しており、技術蓄積を急いでいる。","米国では民間核融合スタートアップへの投資が2025年以降急増しており、官民競争が開発スピードを押し上げている。","中東情勢の長期化がエネルギー安全保障の観点から開発資金を引き寄せており、実用化への期待が高まっている。"],
+    tags:["核融合","エネルギー技術","脱炭素"] },
+  { id:"t9", genre:"tech", importance:"medium",
+    title:"フィジカルAIが産業競争原理を変える　理研が研究成果を発表",
+    source:"日経クロステック", url:"https://xtech.nikkei.com/",
+    summary:["理化学研究所がフィジカルAI（現実世界で直接動作するAI）の研究成果を発表し、「競争原理を変える」と表明した。","フィジカルAIはロボット・自動運転・工場自動化の分野で急速に実用化が進んでおり、2026年を節目に本格普及の兆しが出ている。","NVIDIAが主導する「フィジカルAI」エコシステムに対抗すべく、日本の産学官が連携した開発が急ピッチで進んでいる。","製造業・物流・介護などの現場での実用化が始まっており、日本の強みを活かせる分野として期待が高まっている。","日経クロステックは2026年の注目技術として「AI×自動運転でレベル4本格化」を選定しており一致した見解だ。"],
+    tags:["フィジカルAI","理研","ロボット"] },
+  { id:"t10", genre:"tech", importance:"medium",
+    title:"アンソロピックCEO「中国が半年でMythos並みAI開発可能」と警告",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["アンソロピックのダリオ・アモデイCEOが、中国が半年以内に同社AI「Mythos」に匹敵する技術を開発できると発言した。","米国の半導体輸出規制にもかかわらず中国のAI開発が急速に進んでいることへの強い危機感を示したものだ。","トランプ政権はアンソロピックとの関係修復に前向きな姿勢を見せており、AI安全保障での協力が焦点となる。","日本でもAI開発力の強化が経済・安全保障の両面で急務とされており、政府の投資方針が問われている。","AIをめぐる米中競争は技術開発の速度を上げており、日本企業の対応戦略の見直しも迫られている。"],
+    tags:["AI競争","アンソロピック","中国"] },
+  // 社会
+  { id:"s1", genre:"society", importance:"high",
+    title:"磐越道バス事故　生徒が事故直前の動画撮影　「白バス遠征」常態化の疑い",
+    source:"NHK / 福島テレビ", url:"https://news.web.nhk/newsweb",
+    summary:["磐越自動車道での部活バス事故（高校生1人死亡・20人死傷）で、生徒が事故直前の車内動画を撮影していたことが判明した。","68歳の運転手は「スピードを出し過ぎてぶつかった」と供述しており、警察は過失運転致死傷容疑で逮捕している。","無許可輸送（白ナンバーバス）での部活遠征が常態化していた疑いがあり、バス会社と高校側の説明が食い違っている。","事故現場に3万3000円が入った封筒が残されており、白バス行為の繰り返しについて捜査が続いている。","全国の学校で同様の白ナンバーバス利用が疑われており、文部科学省が実態調査に乗り出した。"],
+    tags:["バス事故","部活","交通安全"] },
+  { id:"s2", genre:"society", importance:"medium",
+    title:"はしか感染が前年比3.8倍に急増　働く世代を直撃",
+    source:"国立健康危機管理研究機構", url:"https://news.web.nhk/newsweb",
+    summary:["2026年のはしか（麻疹）累積感染者数が4月時点で299例と前年同期比3.8倍に急増している。","感染者の83%が15〜49歳の活動世代で、特に1回接種のみで抗体が低下した36〜53歳に集中している。","東京・新宿区の小学校では12年ぶりの学級閉鎖が発生しており、都市部での感染拡大が深刻だ。","ワクチン接種歴が不明な人は早急に抗体検査を受け、必要に応じてMRワクチンの追加接種が推奨されている。","このペースが続けば2026年通年で過去最多の感染者数を更新する恐れがあり、対策の強化が急務だ。"],
+    tags:["はしか","感染症","ワクチン"] },
+  { id:"s3", genre:"society", importance:"medium",
+    title:"旭山動物園の人骨事件　容疑者を特定し逮捕状請求へ",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:["旭山動物園の焼却炉から人骨が発見された事件で、北海道警が容疑者を特定し逮捕状を請求する方針を固めた。","防犯カメラの映像解析で荷物を運び込んだとみられる人物が割り出され、遺体の身元確認と犯行経緯の解明を急いでいる。","北海道警は殺人・死体遺棄の疑いで捜査しており、公共施設を利用した悪質な犯行とみている。","事件を受け、全国の動物園・テーマパークなどが夜間の施設管理体制の見直しを検討し始めている。","容疑者逮捕後に遺体の身元と犯行の動機が明らかになれば、事件の全容解明につながる見通しだ。"],
+    tags:["事件","旭山動物園","北海道"] },
+  { id:"s4", genre:"society", importance:"medium",
+    title:"高速道路にクマが侵入　車が乗り上げる事故が福島で発生",
+    source:"NHK / 福島テレビ", url:"https://news.web.nhk/newsweb",
+    summary:["福島県磐梯町の磐越自動車道でクマが高速道路に侵入し、走行中の車が次々と乗り上げる事故が5月10日に発生した。","クマは現場で駆除され、乗り上げた車に大きな損傷が生じたが、乗客への大きなけがはなかった。","GW明けから東北・北海道を中心にクマの出没情報が急増しており、高速道路への侵入という新たなリスクが浮上した。","NEXCO東日本はクマの侵入防止フェンスの点検と補強を急ぐ方針を示している。","今年は冬眠明けが例年より2〜3週間早く、人間の行動域との重複が拡大しており、共存策の検討が急務となっている。"],
+    tags:["クマ被害","高速道路","野生動物"] },
+  { id:"s5", genre:"society", importance:"medium",
+    title:"JR東海道線でスプレー噴射か　16歳少年を逮捕",
+    source:"NHK", url:"https://news.web.nhk/newsweb",
+    summary:["JR東海道線の走行中の電車内でスプレーを噴射したとして、神奈川県警が16歳の少年を偽計業務妨害などの疑いで逮捕した。","噴射後に乗客数人が体調不良を訴え、電車は次の駅で緊急停車。乗客への健康被害は軽微にとどまった。","少年は「何が起きるか試してみたかった」と動機を説明しているとされ、模倣犯への懸念が広がっている。","公共交通機関での危険物使用事件は近年増加傾向にあり、警察庁は鉄道各社と連携して巡回・監視を強化している。","SNSで「電車内スプレー」の話題が拡散しており、模倣犯防止の観点から啓発活動の強化も求められている。"],
+    tags:["事件","JR","少年"] },
+  { id:"s6", genre:"society", importance:"medium",
+    title:"緊急避妊薬の市販開始3カ月　中高生になお高い価格・心理の壁",
+    source:"時事通信", url:"https://www.jiji.com/",
+    summary:["緊急避妊薬の市販が始まって約3カ月が経過し、中高生が価格的・心理的に高い壁に直面していることが報告された。","10代女性からは「お年玉で購入した」との声も上がるなど、価格負担の重さが明らかになっている。","薬局での対面販売が義務づけられているため、相談しにくさや入手時の羞恥心も課題として浮き彫りになっている。","専門家は「若年層へのアクセス改善なしには制度の実効性が薄れる」と指摘し、処方体制の見直しを求めている。","政府は今後の普及状況を踏まえ、販売方法や価格補助の在り方について検討を進める方針だ。"],
+    tags:["緊急避妊薬","少子化","社会課題"] },
+  { id:"s7", genre:"society", importance:"medium",
+    title:"自転車「青切符」全国842件交付　ながらスマホ・一時不停止が上位",
     source:"読売新聞", url:"https://www.yomiuri.co.jp/",
-    summary:[
-      "自転車への青切符（反則金）制度が導入されて以来、全国で842件の切符が交付されたと読売新聞が報じた。",
-      "違反の内訳は「一時不停止」と「ながらスマホ」が上位を占めている。",
-      "青切符制度は軽微な違反に反則金で対応するもので、従来の赤切符（刑事手続き）より運用しやすい。",
-      "都市部では自転車通勤・通学の増加に伴い、歩行者との接触事故が増加傾向にある。",
-      "警察庁は今後も取り締まりを継続する方針で、自転車利用者への注意喚起が求められる。",
-    ],
-    tags:["交通安全","自転車","法規制"],
-  },
-  {
-    id:"7", genre:"society", importance:"medium",
-    title:"旭山動物園の焼却炉から人骨か　北海道警が捜査",
+    summary:["自転車への青切符（反則金）制度が導入されて以来、全国で842件の切符が交付されたと読売新聞が報じた。","違反の内訳は「一時不停止」と「ながらスマホ」が上位を占めている。","青切符制度は軽微な違反に反則金で対応するもので、従来の赤切符（刑事手続き）より運用しやすい。","都市部では自転車通勤・通学の増加に伴い、歩行者との接触事故が増加傾向にある。","警察庁は今後も取り締まりを継続する方針で、自転車利用者への一層の注意喚起が求められる。"],
+    tags:["自転車","交通安全","法規制"] },
+  { id:"s8", genre:"society", importance:"medium",
+    title:"佐賀・科捜研のDNA鑑定不正　元職員「心底申し訳ない」と謝罪",
     source:"NHK", url:"https://news.web.nhk/newsweb",
-    summary:[
-      "北海道旭川市の旭山動物園の焼却炉から、複数の人骨のようなものが発見されたと北海道警が発表した。",
-      "防犯カメラには大きな荷物を車で運び込む映像が確認されており、遺体の一部が持ち込まれた可能性がある。",
-      "動物園の焼却炉は通常、動物の死体処理に使用されるもので、経緯を詳しく調べている。",
-      "北海道警は殺人や死体遺棄などの観点から捜査を進め、関係者から事情聴取を始めている。",
-      "動物園は施設の一部を立入禁止にして捜査に協力しており、全容解明には時間を要する見通し。",
-    ],
-    tags:["事件","北海道","捜査"],
-  },
-  {
-    id:"8", genre:"society", importance:"medium",
+    summary:["佐賀県警科捜研によるDNA鑑定の不正問題で、元職員が記者会見を開き「心底申し訳ない」と謝罪した。","鑑定データの改ざんや虚偽報告が複数の事件で行われていたとされ、確定判決への影響が懸念されている。","科学的証拠への信頼性を根底から揺るがす不祥事として、法曹界と科学界の双方から強い批判が出ている。","AIを活用した鑑定補助ツールの導入による不正防止と、第三者機関による検証体制の強化が求められている。","再審請求を検討中の関係者が複数おり、過去の捜査・裁判への影響の全容解明に時間がかかる見通しだ。"],
+    tags:["科捜研","DNA不正","司法"] },
+  { id:"s9", genre:"society", importance:"medium",
     title:"水俣病公式確認70年　患者・遺族が慰霊式",
     source:"時事通信", url:"https://www.jiji.com/",
-    summary:[
-      "水俣病が公式確認されてから70年となる5月1日、熊本県水俣市で慰霊式が行われた。",
-      "患者代表の緒方さんは「初心に返って問題を検証してほしい」と訴え、未解決の問題の多さを強調した。",
-      "水俣病は1956年公式確認の有機水銀中毒で、チッソ水俣工場の排水が原因とされ約3000人が認定患者となっている。",
-      "未認定の被害者や損害賠償をめぐる訴訟は現在も続いており、環境省は改めて被害者支援を表明した。",
-      "公害問題の原点として教訓を後世に伝える取り組みの重要性が式典でも繰り返し強調された。",
-    ],
-    tags:["水俣病","公害","環境"],
-  },
+    summary:["水俣病が公式確認されてから70年となる5月1日、熊本県水俣市で慰霊式が行われ、患者・遺族らが犠牲者の冥福を祈った。","患者代表の緒方さんは「初心に返って問題を検証してほしい」と訴え、未解決の問題の多さを強調した。","水俣病は1956年公式確認の有機水銀中毒で、チッソ水俣工場の排水が原因とされ約3000人が認定患者となっている。","未認定の被害者や損害賠償をめぐる訴訟は現在も続いており、環境省は改めて被害者支援を表明した。","公害問題の原点として教訓を後世に伝える取り組みの重要性が式典でも繰り返し強調された。"],
+    tags:["水俣病","公害","環境"] },
+  { id:"s10", genre:"society", importance:"medium",
+    title:"ラグビーリーグワン「帰化選手制限」が独禁法違反申告",
+    source:"日経", url:"https://www.nikkei.com/",
+    summary:["ラグビーリーグワンの外国出身帰化選手の出場を制限する新規定が独占禁止法に違反するとして、帰化選手約30人が公正取引委員会に申告した。","「日本国籍を持っているのにフィールドでは日本人扱いされない」と選手側は強く反発している。","リーグ側は「競技の日本人育成という大義のためやむを得ない」として例外扱いの要求を拒否している。","スポーツ団体の規定と法律の関係、外国人労働者の権利保護という観点から社会的に大きな議論を呼んでいる。","公取委の判断次第では、他のスポーツ競技の外国人選手制限にも影響が及ぶ可能性がある。"],
+    tags:["ラグビー","帰化選手","独禁法"] },
 ];
 
-// ── STATE ─────────────────────────────────────────────────────────
-let activeGenre = "all";
-let currentArticle = null;
+// ── STATE & UTILS ───────────────────────────────────────────────
+let activeGenres = new Set(GENRES.map(g=>g.id));
+let selected = null;
+let savedScroll = 0;
+const root = document.getElementById("root");
+const gInfo = id => GENRES.find(x => x.id === id) || GENRES[0];
 
-// ── INIT ──────────────────────────────────────────────────────────
-document.addEventListener("DOMContentLoaded", () => {
-  const d = new Date();
-  document.getElementById("today-date").textContent =
-    d.toLocaleDateString("ja-JP", { year:"numeric", month:"long", day:"numeric", weekday:"short" });
-  renderTabs();
-  renderContent();
-});
+// ── RENDER ──────────────────────────────────────────────────────
+function render() {
+  const filtered = NEWS.filter(a => activeGenres.has(a.genre));
+  const tops = GENRES.filter(g => activeGenres.has(g.id))
+    .map(g => NEWS.find(a => a.genre===g.id && a.importance==="high"))
+    .filter(Boolean);
+  const rest = filtered.filter(a => !tops.includes(a));
 
-// ── TABS ──────────────────────────────────────────────────────────
-function renderTabs() {
-  const el = document.getElementById("tabs");
-  el.innerHTML = GENRES.map(g => {
-    const cnt = g.id === "all" ? NEWS.length : NEWS.filter(a => a.genre === g.id).length;
-    return `<button class="tab${activeGenre===g.id?" active":""}" onclick="setGenre('${g.id}')">
-      <span>${g.emoji}</span><span>${g.label}</span>
-      ${cnt>0?`<span class="tab-count">${cnt}</span>`:""}
-    </button>`;
-  }).join("");
-}
+  const today = new Date().toLocaleDateString("ja-JP",{month:"numeric",day:"numeric",weekday:"short"});
 
-function setGenre(id) {
-  activeGenre = id;
-  renderTabs();
-  renderContent();
-  document.getElementById("content").scrollTop = 0;
-  window.scrollTo(0,0);
-}
+  if (selected) {
+    renderDetail();
+    return;
+  }
 
-// ── CONTENT ───────────────────────────────────────────────────────
-function renderContent() {
-  const filtered = activeGenre === "all" ? NEWS : NEWS.filter(a => a.genre === activeGenre);
-  const top = filtered.find(a => a.importance === "high");
-  const rest = filtered.filter(a => a !== top);
-  const el = document.getElementById("content");
-
-  let html = "";
-
-  if (top) {
-    const c = col(top.genre);
-    const gi = GENRES.find(g => g.id === top.genre);
-    html += `
-    <div class="top-wrap">
-      <div class="top-label">◈ TOP STORY</div>
-      <div class="top-card" style="background:${c.bg};border-color:${c.accent}33" onclick="openDetail('${top.id}')">
-        <div class="top-glow" style="background:radial-gradient(circle at top right,${c.accent}18,transparent 70%)"></div>
-        <div class="badges">
-          <span class="badge" style="background:${c.accent}22;color:${c.light}">${gi.emoji} ${gi.label}</span>
-          <span class="badge source-badge">${top.source}</span>
+  root.innerHTML = `
+    <div id="list-view" style="display:flex;flex-direction:column;height:100dvh;background:#f7f6f2;font-family:'Georgia','Noto Serif JP',serif;max-width:430px;margin:0 auto;">
+      <!-- HEADER -->
+      <div style="background:#0f0e0b;padding-top:env(safe-area-inset-top,44px);flex-shrink:0;border-bottom:3px solid #c9a84c;">
+        <div style="padding:14px 20px 10px;display:flex;justify-content:space-between;align-items:flex-end;">
+          <div>
+            <div style="font-size:9px;color:#c9a84c;letter-spacing:0.3em;margin-bottom:4px;font-family:'Courier New',monospace;">DAILY INTELLIGENCE</div>
+            <div style="font-size:26px;font-weight:900;color:#f5f0e8;letter-spacing:-0.02em;line-height:1;">速読みNEWS</div>
+          </div>
+          <div style="text-align:right;font-size:10px;color:#8a7a60;font-family:'Courier New',monospace;line-height:1.6;">${today}<br>NHK · 日経 · Reuters</div>
         </div>
-        <div class="top-title" style="color:#f0ece0">${top.title}</div>
-        <div class="top-lead">${top.summary[0]}</div>
-        <div class="top-footer">
-          <div class="tags">${(top.tags||[]).slice(0,2).map(t=>`<span class="tag">#${t}</span>`).join("")}</div>
-          <span class="more-link" style="color:${c.accent}">詳細 →</span>
+        <div style="padding:0 16px 12px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;">
+          <button onclick="toggleAll()" style="flex-shrink:0;padding:5px 12px;border-radius:4px;border:1px solid ${activeGenres.size===GENRES.length?'#c9a84c':'#3a3020'};background:${activeGenres.size===GENRES.length?'#c9a84c':'transparent'};color:${activeGenres.size===GENRES.length?'#000':'#6a5a40'};font-size:11px;font-weight:700;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.05em;">ALL</button>
+          ${GENRES.map(g => `
+            <button onclick="toggleGenre('${g.id}')" style="flex-shrink:0;padding:5px 12px;border-radius:4px;border:1px solid ${activeGenres.has(g.id)?g.color:'#2a2520'};background:${activeGenres.has(g.id)?g.color:'transparent'};color:${activeGenres.has(g.id)?'#fff':'#6a5a40'};font-size:11px;font-weight:700;cursor:pointer;font-family:'Courier New',monospace;letter-spacing:0.05em;transition:all 0.15s;">${g.label}</button>
+          `).join('')}
         </div>
       </div>
-    </div>`;
-  }
 
-  if (top && rest.length > 0) {
-    html += `<div class="section-label">その他のニュース</div>`;
-  }
+      <!-- SCROLL CONTENT -->
+      <div id="scroll-content" style="flex:1;overflow-y:auto;background:#f7f6f2;scrollbar-width:none;">
+        ${tops.length > 0 ? `
+          <div style="padding:16px 16px 0;">
+            <div style="font-size:9px;letter-spacing:0.3em;color:#9a8060;margin-bottom:10px;font-family:'Courier New',monospace;">◈ TOP STORIES</div>
+            ${tops.map((a,i)=>renderTopCard(a,i)).join('')}
+          </div>
+        ` : ''}
 
-  rest.forEach((a, i) => {
-    const c = col(a.genre);
-    const gi = GENRES.find(g => g.id === a.genre);
-    const isLast = i === rest.length - 1;
-    html += `
-    <div class="row${isLast?" last":""}" style="${isLast?"border-bottom:none":""}" onclick="openDetail('${a.id}')">
-      <div class="row-icon" style="background:${c.bg}">${gi.emoji}</div>
-      <div class="row-body">
-        <div class="row-meta">
-          <span style="color:${c.light}">${gi.label}</span>
-          <span class="row-dot">·</span>
-          <span class="row-source">${a.source}</span>
+        ${GENRES.filter(g=>activeGenres.has(g.id)).map(genre => {
+          const articles = rest.filter(a=>a.genre===genre.id);
+          if (!articles.length) return '';
+          return `
+            <div style="margin-top:24px;">
+              <div style="padding:0 16px 8px;display:flex;align-items:center;gap:10px;">
+                <div style="width:3px;height:16px;background:${genre.color};border-radius:2px;flex-shrink:0;"></div>
+                <span style="font-size:10px;font-weight:700;color:${genre.color};letter-spacing:0.2em;font-family:'Courier New',monospace;">${genre.label.toUpperCase()}</span>
+                <div style="flex:1;height:1px;background:#e0dbd0;"></div>
+                <span style="font-size:9px;color:#b0a890;font-family:'Courier New',monospace;">${articles.length}</span>
+              </div>
+              ${articles.map((a,i)=>renderRow(a,i===articles.length-1)).join('')}
+            </div>
+          `;
+        }).join('')}
+
+        <div style="padding:28px 20px 16px;text-align:center;">
+          <div style="font-size:9px;color:#c0b8a8;letter-spacing:0.15em;font-family:'Courier New',monospace;">${filtered.length} ARTICLES · NHK / 日経 / Bloomberg / Reuters</div>
         </div>
-        <div class="row-title">${a.title}</div>
-        <div class="row-lead">${a.summary[0]}</div>
       </div>
-      <div class="row-arrow">›</div>
-    </div>`;
-  });
+    </div>
+  `;
 
-  if (filtered.length === 0) {
-    html = `<div style="text-align:center;padding:80px 20px"><div style="font-size:40px;margin-bottom:12px">📭</div><p style="color:#444;font-size:14px">このジャンルの記事はありません</p></div>`;
-  }
-
-  html += `<div class="footer-note">最終更新 2026/5/4 12:30 · NHK / 日経 / Bloomberg / 時事 / 読売</div>`;
-  el.innerHTML = html;
+  // Restore scroll
+  const sc = document.getElementById("scroll-content");
+  if (sc) sc.scrollTop = savedScroll;
 }
 
-// ── DETAIL ────────────────────────────────────────────────────────
-function openDetail(id) {
-  const a = NEWS.find(x => x.id === id);
-  if (!a) return;
-  currentArticle = a;
-  const c = col(a.genre);
-  const gi = GENRES.find(g => g.id === a.genre);
-
-  document.getElementById("detail-header").style.background = c.bg;
-  document.getElementById("detail-header").style.borderBottom = `1px solid ${c.accent}22`;
-
-  document.getElementById("detail-badges").innerHTML = `
-    <span class="badge" style="background:${c.accent}22;color:${c.light}">${gi.emoji} ${gi.label}</span>
-    <span class="badge source-badge">${a.source}</span>`;
-
-  document.getElementById("detail-title").textContent = a.title;
-
-  document.getElementById("summary-box").style.borderLeft = `3px solid ${c.accent}`;
-  document.getElementById("summary-label-el").style.color = c.light;
-  document.getElementById("summary-label-el").textContent = "5行要約";
-
-  document.getElementById("summary-rows").innerHTML = (a.summary||[]).map((line, i) => `
-    <div class="summary-row">
-      <div class="summary-num" style="background:${i===0?c.accent:"rgba(255,255,255,0.06)"};color:${i===0?"#000":"#666"}">${i+1}</div>
-      <div class="summary-text" style="color:${i===0?"#e8e4d9":"#847a68"}">${line}</div>
-    </div>`).join("");
-
-  document.getElementById("detail-tags").innerHTML = (a.tags||[]).map(t => `<span class="detail-tag">#${t}</span>`).join("");
-
-  const link = document.getElementById("source-link");
-  link.href = a.url;
-  link.style.border = `1px solid ${c.accent}33`;
-  document.getElementById("source-link-name").style.color = c.light;
-  document.getElementById("source-link-name").textContent = a.source;
-  document.getElementById("source-link-icon").style.color = c.accent;
-
-  document.getElementById("list").classList.add("hidden");
-  document.getElementById("detail").classList.add("active");
-  window.scrollTo(0, 0);
+function renderTopCard(a, idx) {
+  const genre = gInfo(a.genre);
+  return `
+    <div onclick="openDetail('${a.id}')" style="background:#fff;border:1px solid ${genre.color}22;border-left:4px solid ${genre.color};border-radius:2px;padding:16px 16px 14px;cursor:pointer;margin-bottom:${idx>0?'10px':'0'};animation:fadeIn 0.3s ${idx*60}ms both;" ontouchstart="this.style.opacity=0.85" ontouchend="this.style.opacity=1">
+      <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center;">
+        <span style="font-size:9px;font-weight:700;color:${genre.color};letter-spacing:0.2em;font-family:'Courier New',monospace;">${genre.label}</span>
+        <span style="font-size:9px;color:#b0a890;font-family:'Courier New',monospace;">· ${a.source}</span>
+      </div>
+      <div style="font-size:16px;font-weight:700;color:#1a1610;line-height:1.45;margin-bottom:8px;letter-spacing:-0.01em;">${a.title}</div>
+      <div style="font-size:12px;color:#6a6050;line-height:1.6;margin-bottom:10px;">${a.summary[0]}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="display:flex;gap:6px;">${a.tags.slice(0,2).map(t=>`<span style="font-size:9px;color:${genre.color};background:${genre.color}18;padding:2px 7px;border-radius:2px;font-family:'Courier New',monospace;">#${t}</span>`).join('')}</div>
+        <span style="font-size:11px;color:${genre.color};font-weight:700;">要約を読む →</span>
+      </div>
+    </div>
+  `;
 }
 
-function closeDetail() {
-  document.getElementById("detail").classList.remove("active");
-  document.getElementById("list").classList.remove("hidden");
+function renderRow(a, isLast) {
+  const genre = gInfo(a.genre);
+  return `
+    <div onclick="openDetail('${a.id}')" style="padding:12px 16px;border-bottom:${isLast?'none':'1px solid #ece7dc'};cursor:pointer;display:flex;gap:12px;align-items:flex-start;" ontouchstart="this.style.background='#f0ede5'" ontouchend="this.style.background='transparent'">
+      <div style="width:3px;height:40px;background:${genre.color};border-radius:2px;flex-shrink:0;margin-top:2px;opacity:0.5;"></div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:600;color:#1a1610;line-height:1.4;margin-bottom:4px;letter-spacing:-0.01em;">${a.title}</div>
+        <div style="font-size:11px;color:#8a8070;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${a.summary[0]}</div>
+      </div>
+      <span style="font-size:14px;color:#c0b8a8;flex-shrink:0;margin-top:8px;">›</span>
+    </div>
+  `;
 }
 
-// ── BACK GESTURE ─────────────────────────────────────────────────
-let touchStartX = 0;
-document.addEventListener("touchstart", e => { touchStartX = e.touches[0].clientX; }, { passive:true });
-document.addEventListener("touchend", e => {
-  if (document.getElementById("detail").classList.contains("active")) {
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    if (dx > 80) closeDetail();
-  }
-}, { passive:true });
+function renderDetail() {
+  const a = selected;
+  const genre = gInfo(a.genre);
+  root.innerHTML = `
+    <div style="position:fixed;inset:0;background:#f7f6f2;display:flex;flex-direction:column;z-index:200;overflow-y:auto;font-family:'Georgia','Noto Serif JP',serif;max-width:430px;margin:0 auto;animation:slideUp 0.25s ease;">
+      <div style="background:${genre.color};padding-top:env(safe-area-inset-top,44px);flex-shrink:0;">
+        <div style="padding:12px 16px 16px;">
+          <button onclick="closeDetail()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;border-radius:4px;padding:7px 14px;font-size:13px;cursor:pointer;margin-bottom:14px;font-family:inherit;">← 一覧へ戻る</button>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+            <span style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.8);letter-spacing:0.2em;font-family:'Courier New',monospace;background:rgba(255,255,255,0.15);padding:3px 8px;border-radius:2px;">${genre.label}</span>
+            <span style="font-size:9px;color:rgba(255,255,255,0.6);font-family:'Courier New',monospace;padding:3px 8px;">${a.source}</span>
+          </div>
+          <div style="font-size:18px;font-weight:700;color:#fff;line-height:1.45;letter-spacing:-0.01em;">${a.title}</div>
+        </div>
+      </div>
+      <div style="flex:1;padding:20px 16px;">
+        <div style="background:#fff;border-radius:2px;padding:18px;margin-bottom:16px;border:1px solid #e8e0d0;">
+          <div style="font-size:9px;letter-spacing:0.25em;color:${genre.color};margin-bottom:14px;font-family:'Courier New',monospace;font-weight:700;">5-POINT SUMMARY</div>
+          ${a.summary.map((line,i)=>`
+            <div style="display:flex;gap:12px;margin-bottom:${i<4?'12px':'0'};align-items:flex-start;">
+              <div style="width:20px;height:20px;border-radius:50%;background:${i===0?genre.color:`${genre.color}18`};color:${i===0?'#fff':genre.color};font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-family:'Courier New',monospace;">${i+1}</div>
+              <div style="font-size:14px;line-height:1.65;color:${i===0?'#1a1610':'#6a6050'};">${line}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;">
+          ${a.tags.map(t=>`<span style="font-size:10px;color:${genre.color};background:${genre.color}12;padding:4px 10px;border-radius:2px;font-family:'Courier New',monospace;">#${t}</span>`).join('')}
+        </div>
+        <a href="${a.url}" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:2px;padding:14px 16px;text-decoration:none;border:1px solid ${genre.color}33;">
+          <div>
+            <div style="font-size:9px;color:#b0a890;margin-bottom:3px;font-family:'Courier New',monospace;letter-spacing:0.1em;">元記事を確認する</div>
+            <div style="font-size:12px;color:${genre.color};font-weight:600;">${a.source}</div>
+          </div>
+          <span style="font-size:18px;color:${genre.color};">↗</span>
+        </a>
+      </div>
+    </div>
+  `;
+}
+
+// ── ACTIONS ─────────────────────────────────────────────────────
+window.toggleAll = () => {
+  activeGenres = new Set(GENRES.map(g=>g.id));
+  render();
+};
+window.toggleGenre = id => {
+  if (activeGenres.has(id) && activeGenres.size === 1) return;
+  activeGenres.has(id) ? activeGenres.delete(id) : activeGenres.add(id);
+  render();
+};
+window.openDetail = id => {
+  const sc = document.getElementById("scroll-content");
+  if (sc) savedScroll = sc.scrollTop;
+  selected = NEWS.find(a=>a.id===id);
+  render();
+};
+window.closeDetail = () => {
+  selected = null;
+  render();
+};
+
+// ── INIT ────────────────────────────────────────────────────────
+render();
+
+// PWA Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
 </script>
 </body>
 </html>
