@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#1a1a1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="もしもの時">
+<link rel="manifest" href="manifest.json">
+<title>もしもの時</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+:root {
+  --bg:  #ffffff;
+  --bg2: #f7f7f7;
+  --bg3: #efefef;
+  --c1:  #1a1a1a;
+  --c2:  #6b6b6b;
+  --c3:  #9b9b9b;
+  --b1:  #c8c8c8;
+  --b2:  #e0e0e0;
+  --b3:  #ebebeb;
+  --r:   12px;
+  --f:   -apple-system,'Hiragino Sans','Yu Gothic',sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html {
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+html, body { height: 100%; }
+body {
+  font-family: var(--f);
+  background: var(--bg);
+  min-height: 100dvh;
+  overscroll-behavior: none;
+}
+
+/* Phone frame (desktop preview only) */
+.phone {
+  width: 100%;
+  max-width: 390px;
+  min-height: 100dvh;
+  background: var(--bg);
+  margin: 0 auto;
+  position: relative;
+  overflow-x: hidden;
+}
+@media (min-width: 600px) {
+  body { background: #e8e8e8; display: flex; align-items: flex-start; justify-content: center; padding: 1.5rem 0; }
+  .phone { min-height: calc(100vh - 3rem); border-radius: 32px; border: 0.5px solid #ccc; box-shadow: 0 8px 40px rgba(0,0,0,0.12); overflow: hidden; }
+}
+@media (display-mode: standalone) {
+  body { background: var(--bg); padding: 0; align-items: stretch; }
+  .phone { border-radius: 0; border: none; box-shadow: none; }
+}
+
+/* Screens */
+.screen { display: none; flex-direction: column; min-height: 100dvh; }
+.screen.active { display: flex; }
+
+/* Status bar */
+.sbar {
+  padding: calc(env(safe-area-inset-top, 0px) + 14px) 20px 4px;
+  font-size: 11px; color: var(--c3);
+  display: flex; justify-content: space-between;
+  flex-shrink: 0;
+}
+@media (display-mode: standalone) {
+  .sbar { padding-top: calc(env(safe-area-inset-top, 0px) + 6px); }
+}
+
+/* Nav */
+.nav { display: flex; align-items: center; padding: 8px 16px 12px; gap: 8px; flex-shrink: 0; }
+.nav-back {
+  background: none; border: none; cursor: pointer;
+  color: var(--c2); font-size: 22px; padding: 4px; line-height: 1;
+  display: flex; align-items: center;
+}
+.nav-title { font-size: 15px; font-weight: 500; color: var(--c1); }
+
+/* Content */
+.content {
+  flex: 1; padding: 0 16px 48px; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* ── Home header ── */
+.app-header { padding: 36px 20px 20px; text-align: center; }
+.app-icon {
+  width: 64px; height: 64px; background: var(--c1); border-radius: 16px;
+  margin: 0 auto 16px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 28px;
+}
+.app-name { font-size: 22px; font-weight: 500; color: var(--c1); letter-spacing: -0.5px; }
+.app-tagline { font-size: 13px; color: var(--c2); margin-top: 6px; line-height: 1.6; }
+
+/* Section label */
+.sec { font-size: 11px; font-weight: 500; color: var(--c3); letter-spacing: 0.5px; text-transform: uppercase; margin: 20px 0 8px; }
+
+/* Menu item */
+.mi {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; background: var(--bg2); border-radius: var(--r);
+  margin-bottom: 8px; cursor: pointer; border: 0.5px solid var(--b3);
+  transition: background 0.12s; -webkit-user-select: none; user-select: none;
+}
+.mi:active { background: var(--bg3); }
+.mi-left { display: flex; align-items: center; gap: 12px; }
+.mi-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; background: var(--bg3); color: var(--c2);
+}
+.mi-text { font-size: 14px; font-weight: 500; color: var(--c1); }
+.mi-sub { font-size: 11px; color: var(--c3); margin-top: 1px; }
+
+/* Badge */
+.badge { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+.done { background: #EAF3DE; color: #3B6D11; }
+.todo { background: #FAEEDA; color: #854F0B; }
+
+/* SOS */
+.sos-wrap { margin: 28px 0 8px; text-align: center; }
+.sos-hint { font-size: 12px; color: var(--c3); margin-bottom: 20px; line-height: 1.5; }
+.sos-btn {
+  width: 120px; height: 120px; border-radius: 60px; background: var(--c1);
+  border: none; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  margin: 0 auto; gap: 6px;
+  transition: transform 0.1s, background 0.15s;
+  -webkit-user-select: none; user-select: none;
+}
+.sos-btn:active { transform: scale(0.94); background: #333; }
+.sos-icon { font-size: 32px; color: white; }
+.sos-label { font-size: 11px; color: rgba(255,255,255,0.65); letter-spacing: 1px; }
+.sos-btn.off { opacity: 0.35; pointer-events: none; }
+
+/* ── Prep ── */
+.area-sel {
+  width: 100%; padding: 10px 14px; border-radius: var(--r);
+  border: 0.5px solid var(--b2); background: var(--bg2);
+  font-size: 14px; color: var(--c1); margin-bottom: 16px;
+  appearance: none; -webkit-appearance: none; font-family: var(--f);
+}
+.vi {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; background: var(--bg2); border-radius: var(--r);
+  margin-bottom: 8px; cursor: pointer; border: 0.5px solid var(--b3);
+  transition: border-color 0.12s; -webkit-user-select: none; user-select: none;
+}
+.vi.sel { border-color: var(--c1); border-width: 1.5px; }
+.vi-name { font-size: 14px; font-weight: 500; color: var(--c1); }
+.vi-note { font-size: 12px; color: var(--c3); margin-top: 2px; }
+.vi-chk {
+  width: 22px; height: 22px; border-radius: 11px;
+  border: 1.5px solid var(--b2);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: transparent; font-size: 12px;
+}
+.vi.sel .vi-chk { background: var(--c1); border-color: var(--c1); color: white; }
+.cta {
+  width: 100%; padding: 15px; border-radius: var(--r);
+  background: var(--c1); border: none; color: white;
+  font-size: 15px; font-weight: 500; cursor: pointer;
+  margin-top: 8px; font-family: var(--f);
+  touch-action: manipulation;
+}
+.cta:active { background: #333; }
+.cta:disabled { opacity: 0.35; cursor: default; }
+
+/* ── PIN ── */
+.pin-area { padding: 8px 0; }
+.pin-label { font-size: 13px; color: var(--c2); text-align: center; margin-bottom: 24px; line-height: 1.6; }
+.pin-dots { display: flex; justify-content: center; gap: 12px; margin-bottom: 32px; }
+.pin-dot {
+  width: 14px; height: 14px; border-radius: 7px;
+  border: 1.5px solid var(--b1); background: transparent;
+  transition: background 0.12s, border-color 0.12s;
+}
+.pin-dot.on { background: var(--c1); border-color: var(--c1); }
+.pin-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; max-width: 240px; margin: 0 auto; }
+.pk {
+  height: 52px; border-radius: var(--r); border: 0.5px solid var(--b3);
+  background: var(--bg2); font-size: 20px; font-weight: 500;
+  cursor: pointer; color: var(--c1); font-family: var(--f);
+  display: flex; align-items: center; justify-content: center;
+  -webkit-user-select: none; user-select: none;
+  touch-action: manipulation;
+}
+.pk:active { background: var(--bg3); }
+.pk.del { font-size: 16px; color: var(--c2); }
+.pin-err { text-align: center; color: #c0392b; font-size: 12px; margin-top: 16px; min-height: 18px; }
+.pin-demo { text-align: center; margin-top: 20px; font-size: 11px; color: var(--b1); }
+
+/* ── Confirm ── */
+.conf-top { text-align: center; padding: 16px 0 8px; }
+.conf-icon { font-size: 48px; margin-bottom: 16px; }
+.conf-title { font-size: 18px; font-weight: 500; color: var(--c1); margin-bottom: 8px; }
+.conf-body { font-size: 13px; color: var(--c2); line-height: 1.6; margin-bottom: 24px; }
+.notify-list { margin-bottom: 24px; }
+.ni {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; background: var(--bg2); border-radius: var(--r);
+  margin-bottom: 8px; font-size: 13px; color: var(--c1);
+}
+.ni-dot { width: 8px; height: 8px; border-radius: 4px; background: var(--c1); flex-shrink: 0; }
+.lp-btn {
+  width: 100%; padding: 16px; border-radius: var(--r); background: var(--c1);
+  border: none; color: white; font-size: 15px; font-weight: 500; cursor: pointer;
+  position: relative; overflow: hidden; margin-bottom: 12px; font-family: var(--f);
+  -webkit-user-select: none; user-select: none;
+  touch-action: none; /* prevent scroll interference during long press */
+}
+.lp-fill { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(255,255,255,0.18); width: 0%; }
+.lp-fill.go { transition: width 3s linear; width: 100%; }
+.lp-text { position: relative; z-index: 1; pointer-events: none; }
+.cancel-btn {
+  width: 100%; padding: 14px; border-radius: var(--r);
+  background: none; border: 0.5px solid var(--b2);
+  color: var(--c2); font-size: 14px; cursor: pointer; font-family: var(--f);
+}
+
+/* ── Complete ── */
+.comp-top { text-align: center; padding: 40px 0 20px; }
+.comp-chk {
+  width: 72px; height: 72px; border-radius: 36px; background: var(--c1);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px; font-size: 32px; color: white;
+}
+.comp-title { font-size: 20px; font-weight: 500; color: var(--c1); margin-bottom: 10px; }
+.comp-body { font-size: 13px; color: var(--c2); line-height: 1.7; margin-bottom: 28px; }
+.si {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 14px; border-radius: var(--r);
+  margin-bottom: 8px; border: 0.5px solid var(--b3);
+  background: var(--bg2); font-size: 13px; color: var(--c1);
+}
+.si-chk { color: #3B6D11; font-size: 18px; }
+.reset-btn {
+  display: block; width: 100%; margin-top: 32px; padding: 12px;
+  border-radius: var(--r); background: none; border: 0.5px solid var(--b3);
+  color: var(--c3); font-size: 13px; cursor: pointer; font-family: var(--f);
+}
+</style>
+</head>
+<body>
+<div class="phone">
+
+<!-- ══════════════════════════ Screen 1: Home -->
+<div class="screen active" id="s-home">
+  <div class="sbar"><span id="home-time">9:41</span><span>◼◼◼</span></div>
+  <div class="app-header">
+    <div class="app-icon"><i class="ti ti-shield-heart"></i></div>
+    <div class="app-name">もしもの時</div>
+    <div class="app-tagline">ボタンひとつで、<br>あとは泣いていていい。</div>
+  </div>
+  <div class="content">
+    <div class="sec">事前準備</div>
+
+    <div class="mi" onclick="openPrep('funeral')">
+      <div class="mi-left">
+        <div class="mi-icon"><i class="ti ti-building"></i></div>
+        <div>
+          <div class="mi-text">葬儀の手配</div>
+          <div class="mi-sub">葬儀社・プランを選んでおく</div>
+        </div>
+      </div>
+      <span class="badge" id="badge-funeral">未設定</span>
+    </div>
+
+    <div class="mi" onclick="openPrep('home')">
+      <div class="mi-left">
+        <div class="mi-icon"><i class="ti ti-home"></i></div>
+        <div>
+          <div class="mi-text">家の手配</div>
+          <div class="mi-sub">不動産・遺品整理業者</div>
+        </div>
+      </div>
+      <span class="badge" id="badge-home">未設定</span>
+    </div>
+
+    <div class="mi" onclick="openPrep('inheritance')">
+      <div class="mi-left">
+        <div class="mi-icon"><i class="ti ti-file-text"></i></div>
+        <div>
+          <div class="mi-text">相続の手配</div>
+          <div class="mi-sub">税理士・司法書士</div>
+        </div>
+      </div>
+      <span class="badge" id="badge-inheritance">未設定</span>
+    </div>
+
+    <div class="sos-wrap">
+      <div class="sos-hint" id="sos-hint">すべての準備が整ったら押してください</div>
+      <button class="sos-btn off" id="sos-btn" onclick="openPin()" aria-label="起動ボタン">
+        <i class="ti ti-power sos-icon"></i>
+        <span class="sos-label">ACTIVATE</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ Screen 2: Prep -->
+<div class="screen" id="s-prep">
+  <div class="sbar"><span>9:41</span><span>◼◼◼</span></div>
+  <div class="nav">
+    <button class="nav-back" onclick="go('s-home')" aria-label="戻る"><i class="ti ti-arrow-left"></i></button>
+    <span class="nav-title" id="prep-title">葬儀の手配</span>
+  </div>
+  <div class="content">
+    <div class="sec">エリア</div>
+    <select class="area-sel" id="area-sel" onchange="renderVendors()">
+      <option value="tokyo">東京都</option>
+      <option value="osaka">大阪府</option>
+      <option value="fukuoka">福岡県</option>
+      <option value="hokkaido">北海道</option>
+    </select>
+    <div class="sec" id="vendor-sec-lbl">葬儀社を選ぶ</div>
+    <div id="vendor-list"></div>
+    <button class="cta" id="decide-btn" onclick="decidePrepVendor()" disabled>この業者で決定する</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════ Screen 3: PIN -->
+<div class="screen" id="s-pin">
+  <div class="sbar"><span>9:41</span><span>◼◼◼</span></div>
+  <div class="nav">
+    <button class="nav-back" onclick="go('s-home')" aria-label="戻る"><i class="ti ti-arrow-left"></i></button>
+    <span class="nav-title">暗証番号を入力</span>
+  </div>
+  <div class="content">
+    <div class="pin-area">
+      <div class="pin-label">ご家族が事前に共有された<br>暗証番号を入力してください</div>
+      <div class="pin-dots">
+        <div class="pin-dot" id="d0"></div>
+        <div class="pin-dot" id="d1"></div>
+        <div class="pin-dot" id="d2"></div>
+        <div class="pin-dot" id="d3"></div>
+      </div>
+      <div class="pin-grid">
+        <button class="pk" onclick="pinKey('1')">1</button>
+        <button class="pk" onclick="pinKey('2')">2</button>
+        <button class="pk" onclick="pinKey('3')">3</button>
+        <button class="pk" onclick="pinKey('4')">4</button>
+        <button class="pk" onclick="pinKey('5')">5</button>
+        <button class="pk" onclick="pinKey('6')">6</button>
+        <button class="pk" onclick="pinKey('7')">7</button>
+        <button class="pk" onclick="pinKey('8')">8</button>
+        <button class="pk" onclick="pinKey('9')">9</button>
+        <button class="pk" style="visibility:hidden" aria-hidden="true"></button>
+        <button class="pk" onclick="pinKey('0')">0</button>
+        <button class="pk del" onclick="pinDel()" aria-label="削除"><i class="ti ti-backspace"></i></button>
+      </div>
+      <div class="pin-err" id="pin-err"></div>
+      <div class="pin-demo">デモ用 PIN: 1234</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════ Screen 4: Confirm -->
+<div class="screen" id="s-confirm">
+  <div class="sbar"><span>9:41</span><span>◼◼◼</span></div>
+  <div class="nav">
+    <button class="nav-back" onclick="go('s-home')" aria-label="戻る"><i class="ti ti-arrow-left"></i></button>
+    <span class="nav-title">確認</span>
+  </div>
+  <div class="content">
+    <div class="conf-top">
+      <div class="conf-icon">🕯️</div>
+      <div class="conf-title">起動してよろしいですか？</div>
+      <div class="conf-body">この操作は取り消せません。<br>以下の業者へ通知が送られます。</div>
+    </div>
+    <div class="notify-list" id="notify-list"></div>
+    <button class="lp-btn" id="lp-btn"
+      onmousedown="startPress()" onmouseup="cancelPress()" onmouseleave="cancelPress()"
+      ontouchstart="startPress(event)" ontouchend="cancelPress()" ontouchcancel="cancelPress()"
+      aria-label="3秒長押しで起動">
+      <div class="lp-fill" id="lp-fill"></div>
+      <span class="lp-text" id="lp-text">長押しで起動（3秒）</span>
+    </button>
+    <button class="cancel-btn" onclick="go('s-home')">キャンセル</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════ Screen 5: Complete -->
+<div class="screen" id="s-complete">
+  <div class="sbar"><span>9:41</span><span>◼◼◼</span></div>
+  <div class="content" style="padding-top:0">
+    <div class="comp-top">
+      <div class="comp-chk"><i class="ti ti-check"></i></div>
+      <div class="comp-title">通知を送りました</div>
+      <div class="comp-body">各業者からご連絡が入ります。<br>それ以外は何もしなくて大丈夫です。</div>
+    </div>
+    <div id="sent-list"></div>
+    <button class="reset-btn" onclick="resetAll()">最初からやり直す（デモ用）</button>
+  </div>
+</div>
+
+</div><!-- .phone -->
+
+<script>
+// ── Data ──────────────────────────────────────────────────
+const DEMO_PIN = '1234';
+
+const CATS = {
+  funeral:     { label: '葬儀の手配',  vendorLbl: '葬儀社を選ぶ',  noteLbl: '葬儀' },
+  home:        { label: '家の手配',    vendorLbl: '業者を選ぶ',    noteLbl: '家の手配' },
+  inheritance: { label: '相続の手配',  vendorLbl: '専門家を選ぶ',  noteLbl: '相続' },
+};
+
+const VENDORS = {
+  funeral: {
+    tokyo:    [
+      { id:'f1', name:'○○セレモニー',     note:'東京都渋谷区 · 家族葬専門' },
+      { id:'f2', name:'△△葬儀社',         note:'東京都新宿区 · 24時間対応' },
+      { id:'f3', name:'□□ホール',          note:'東京都目黒区 · 一般葬・家族葬' },
+    ],
+    osaka:    [
+      { id:'f4', name:'梅田セレモニー',    note:'大阪府大阪市北区 · 家族葬専門' },
+      { id:'f5', name:'なんば葬儀社',      note:'大阪府大阪市中央区 · 24時間対応' },
+      { id:'f6', name:'天王寺ホール',      note:'大阪府大阪市天王寺区 · 一般葬対応' },
+    ],
+    fukuoka:  [
+      { id:'f7', name:'博多セレモニー',    note:'福岡県福岡市博多区 · 家族葬専門' },
+      { id:'f8', name:'天神葬儀社',        note:'福岡県福岡市中央区 · 24時間対応' },
+    ],
+    hokkaido: [
+      { id:'f9',  name:'札幌セレモニー',   note:'北海道札幌市中央区 · 家族葬専門' },
+      { id:'f10', name:'北海道葬儀社',     note:'北海道旭川市 · 24時間対応' },
+    ],
+  },
+  home: {
+    tokyo:    [
+      { id:'h1', name:'○○不動産',          note:'東京都渋谷区 · 遺品整理対応' },
+      { id:'h2', name:'△△ハウス',          note:'東京都新宿区 · 即日対応可能' },
+      { id:'h3', name:'□□リアルティ',      note:'東京都目黒区 · 相続物件専門' },
+    ],
+    osaka:    [
+      { id:'h4', name:'梅田不動産',         note:'大阪府大阪市北区 · 遺品整理対応' },
+      { id:'h5', name:'なんばハウス',       note:'大阪府大阪市中央区 · 即日対応可能' },
+      { id:'h6', name:'大阪リアルティ',     note:'大阪府大阪市 · 相続物件専門' },
+    ],
+    fukuoka:  [
+      { id:'h7', name:'博多不動産',         note:'福岡県福岡市博多区 · 遺品整理対応' },
+      { id:'h8', name:'天神ハウス',         note:'福岡県福岡市中央区 · 即日対応可能' },
+    ],
+    hokkaido: [
+      { id:'h9',  name:'札幌不動産',        note:'北海道札幌市中央区 · 遺品整理対応' },
+      { id:'h10', name:'北海道ハウス',      note:'北海道旭川市 · 即日対応可能' },
+    ],
+  },
+  inheritance: {
+    tokyo:    [
+      { id:'i1', name:'○○税理士事務所',    note:'東京都渋谷区 · 相続専門' },
+      { id:'i2', name:'△△司法書士',        note:'東京都新宿区 · 土地・建物登記' },
+      { id:'i3', name:'□□法律事務所',      note:'東京都目黒区 · 遺言・相続全般' },
+    ],
+    osaka:    [
+      { id:'i4', name:'梅田税理士事務所',   note:'大阪府大阪市北区 · 相続専門' },
+      { id:'i5', name:'なんば司法書士',     note:'大阪府大阪市中央区 · 土地・建物登記' },
+      { id:'i6', name:'大阪法律事務所',     note:'大阪府大阪市 · 遺言・相続全般' },
+    ],
+    fukuoka:  [
+      { id:'i7', name:'博多税理士事務所',   note:'福岡県福岡市博多区 · 相続専門' },
+      { id:'i8', name:'天神司法書士',       note:'福岡県福岡市中央区 · 土地・建物登記' },
+    ],
+    hokkaido: [
+      { id:'i9',  name:'札幌税理士事務所',  note:'北海道札幌市中央区 · 相続専門' },
+      { id:'i10', name:'北海道司法書士',    note:'北海道旭川市 · 土地・建物登記' },
+    ],
+  },
+};
+
+// ── State ─────────────────────────────────────────────────
+let state = JSON.parse(localStorage.getItem('mogishi') || '{"selections":{}}');
+if (!state.selections) state.selections = {};
+
+let currentCat = null;   // 'funeral' | 'home' | 'inheritance'
+let currentSel = null;   // vendor id currently highlighted in prep screen
+let pinVal = '';
+let pressTimer = null;
+
+function save() { localStorage.setItem('mogishi', JSON.stringify(state)); }
+
+// ── Navigation ─────────────────────────────────────────────
+function go(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ── Home ───────────────────────────────────────────────────
+function refreshHome() {
+  const catKeys = Object.keys(CATS);
+  for (const cat of catKeys) {
+    const sel = state.selections[cat];
+    const el = document.getElementById('badge-' + cat);
+    if (sel) {
+      el.textContent = '設定済';
+      el.className = 'badge done';
+    } else {
+      el.textContent = '未設定';
+      el.className = 'badge todo';
+    }
+  }
+  const allDone = catKeys.every(c => state.selections[c]);
+  const btn = document.getElementById('sos-btn');
+  const hint = document.getElementById('sos-hint');
+  if (allDone) {
+    btn.classList.remove('off');
+    hint.textContent = 'すべての準備が整いました';
+  } else {
+    btn.classList.add('off');
+    const remaining = catKeys.filter(c => !state.selections[c]).length;
+    hint.textContent = `あと ${remaining} 件の準備が必要です`;
+  }
+}
+
+function updateTime() {
+  const now = new Date();
+  const h = now.getHours().toString().padStart(2, '0');
+  const m = now.getMinutes().toString().padStart(2, '0');
+  const el = document.getElementById('home-time');
+  if (el) el.textContent = h + ':' + m;
+}
+
+// ── Prep ───────────────────────────────────────────────────
+function openPrep(cat) {
+  currentCat = cat;
+  currentSel = state.selections[cat] ? state.selections[cat].id : null;
+  document.getElementById('prep-title').textContent = CATS[cat].label;
+  document.getElementById('vendor-sec-lbl').textContent = CATS[cat].vendorLbl;
+  document.getElementById('area-sel').value = 'tokyo';
+  renderVendors();
+  go('s-prep');
+}
+
+function renderVendors() {
+  const area = document.getElementById('area-sel').value;
+  const vendors = (VENDORS[currentCat] || {})[area] || [];
+  document.getElementById('vendor-list').innerHTML = vendors.map(v => {
+    const isSel = v.id === currentSel;
+    return `<div class="vi${isSel ? ' sel' : ''}" onclick="selectVendor('${v.id}')">
+      <div>
+        <div class="vi-name">${v.name}</div>
+        <div class="vi-note">${v.note}</div>
+      </div>
+      <div class="vi-chk">${isSel ? '<i class="ti ti-check"></i>' : ''}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('decide-btn').disabled = !currentSel;
+}
+
+function selectVendor(id) {
+  currentSel = id;
+  document.getElementById('decide-btn').disabled = false;
+  renderVendors();
+}
+
+function decidePrepVendor() {
+  if (!currentSel) return;
+  const area = document.getElementById('area-sel').value;
+  const vendors = (VENDORS[currentCat] || {})[area] || [];
+  const vendor = vendors.find(v => v.id === currentSel);
+  if (!vendor) return;
+  state.selections[currentCat] = { id: vendor.id, name: vendor.name };
+  save();
+  refreshHome();
+  go('s-home');
+}
+
+// ── PIN ────────────────────────────────────────────────────
+function openPin() {
+  pinVal = '';
+  updateDots();
+  document.getElementById('pin-err').textContent = '';
+  go('s-pin');
+}
+
+function pinKey(k) {
+  if (pinVal.length >= 4) return;
+  pinVal += k;
+  updateDots();
+  if (pinVal.length === 4) setTimeout(checkPin, 280);
+}
+
+function pinDel() {
+  pinVal = pinVal.slice(0, -1);
+  updateDots();
+  document.getElementById('pin-err').textContent = '';
+}
+
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('d' + i).classList.toggle('on', i < pinVal.length);
+  }
+}
+
+function checkPin() {
+  if (pinVal === DEMO_PIN) {
+    openConfirm();
+  } else {
+    document.getElementById('pin-err').textContent = '暗証番号が違います。もう一度お試しください。';
+    pinVal = '';
+    updateDots();
+  }
+}
+
+// ── Confirm ────────────────────────────────────────────────
+function openConfirm() {
+  document.getElementById('notify-list').innerHTML = Object.keys(CATS)
+    .filter(cat => state.selections[cat])
+    .map(cat => {
+      const sel = state.selections[cat];
+      return `<div class="ni"><div class="ni-dot"></div>${sel.name}（${CATS[cat].noteLbl}）</div>`;
+    }).join('');
+  resetPress();
+  go('s-confirm');
+}
+
+// ── Long press ─────────────────────────────────────────────
+function startPress(e) {
+  if (e) e.preventDefault();
+  const fill = document.getElementById('lp-fill');
+  const text = document.getElementById('lp-text');
+  fill.style.transition = 'none';
+  fill.style.width = '0%';
+  fill.offsetWidth; // force reflow
+  fill.classList.add('go');
+  text.textContent = '起動中...';
+  pressTimer = setTimeout(() => {
+    buildSentList();
+    go('s-complete');
+  }, 3000);
+}
+
+function cancelPress() {
+  clearTimeout(pressTimer);
+  pressTimer = null;
+  resetPress();
+}
+
+function resetPress() {
+  clearTimeout(pressTimer);
+  const fill = document.getElementById('lp-fill');
+  const text = document.getElementById('lp-text');
+  if (fill) {
+    fill.style.transition = 'none';
+    fill.classList.remove('go');
+    fill.style.width = '0%';
+  }
+  if (text) text.textContent = '長押しで起動（3秒）';
+}
+
+// ── Complete ───────────────────────────────────────────────
+function buildSentList() {
+  document.getElementById('sent-list').innerHTML = Object.keys(CATS)
+    .filter(cat => state.selections[cat])
+    .map(cat => {
+      const sel = state.selections[cat];
+      return `<div class="si"><i class="ti ti-circle-check si-chk"></i>${sel.name} — 通知済み</div>`;
+    }).join('');
+}
+
+function resetAll() {
+  state.selections = {};
+  save();
+  refreshHome();
+  go('s-home');
+}
+
+// ── Boot ───────────────────────────────────────────────────
+refreshHome();
+updateTime();
+setInterval(updateTime, 30000);
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

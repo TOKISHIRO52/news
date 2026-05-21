@@ -1,0 +1,16 @@
+{
+  "name": "もしもの時",
+  "short_name": "もしもの時",
+  "description": "ボタンひとつで、あとは泣いていていい。",
+  "start_url": "/news/mogishi/",
+  "scope": "/news/mogishi/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1a1a1a",
+  "orientation": "portrait-primary",
+  "lang": "ja",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable any" }
+  ]
+}
