@@ -76,6 +76,7 @@ def build_html(articles):
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="朝刊">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://script.google.com https://*.googleapis.com; img-src 'self' data:; manifest-src 'self'; worker-src 'self';">
 <title>朝刊ブリーフィング</title>
 <style>
 :root{{--bg:#0d0d12;--surface:#141418;--border:#1e1e26;--gold:#c9a84c;--text:#e8e4d9;--muted:#6a6458;--dim:#333;}}
